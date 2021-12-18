@@ -1,0 +1,1 @@
+export const START_STREAMING = 'START_STREAMING';
