@@ -7,26 +7,20 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { START_STREAMING } from './stream.event';
-import { StartStreamingDto } from './stream.interface';
+import { ADD_TO_QUEUE } from './stream.event';
+import { AddToQueueDto } from './stream.interface';
 import { StreamService } from './stream.service';
 
 @WebSocketGateway({ cors: true, origin: true, credential: true })
-export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class StreamGateway {
   constructor(private readonly streamService: StreamService) {}
 
-  @SubscribeMessage(START_STREAMING)
-  async onStartStreaming(
+  @SubscribeMessage(ADD_TO_QUEUE)
+  async addToQueue(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() startStreamingDto: StartStreamingDto,
+    @MessageBody() dto: AddToQueueDto,
   ) {
-    const { url } = startStreamingDto;
-  }
-
-  handleConnection(@ConnectedSocket() socket: Socket) {
-    console.log(`Socket ${socket.id} connected!`);
-  }
-  handleDisconnect(@ConnectedSocket() socket: Socket) {
-    console.log(`Socket ${socket.id} disconnected!`);
+    const { fileName } = await this.streamService.addToQueue(dto);
+    socket.emit(ADD_TO_QUEUE, { fileName });
   }
 }

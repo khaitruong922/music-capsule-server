@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DownloaderModule } from './core/downloader/downloader.module';
 import { StreamModule } from './core/stream/stream.module';
+import { LobbyModule } from './lobby/lobby.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { StreamModule } from './core/stream/stream.module';
     }),
     DownloaderModule,
     StreamModule,
+    LobbyModule,
   ],
   controllers: [],
   providers: [],

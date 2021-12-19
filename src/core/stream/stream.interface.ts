@@ -1,3 +1,3 @@
-export interface StartStreamingDto {
+export interface AddToQueueDto {
   url: string;
 }

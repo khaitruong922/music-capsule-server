@@ -1,6 +1,5 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
-import ytdl from 'ytdl-core';
 import { DownloadRequestBodyDto } from './downloader.interface';
 import { DownloaderService } from './downloader.service';
 
@@ -40,7 +39,7 @@ export class DownloaderController {
   @Post('mp3/disk')
   async downloadMp3ToDisk(@Body() dto: DownloadRequestBodyDto) {
     const { url } = dto;
-    return this.downloaderService.downloadToDisk({
+    return this.downloaderService.saveToDisk({
       url,
       format: 'audioonly',
     });

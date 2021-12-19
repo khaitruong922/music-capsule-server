@@ -1,12 +1,7 @@
-import {
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import fs from 'fs';
 import path from 'path';
 import {
-  createWriteStreamAsync,
   getExtensionFromFormat,
   removeForwardSlashes,
 } from 'src/common/utils/file';
@@ -17,14 +12,16 @@ import { CreateDownloaderDto, DownloadVideoData } from './downloader.interface';
 export class DownloaderService {
   constructor() {}
 
-  async downloadToDisk(dto: CreateDownloaderDto) {
+  async saveToDisk(dto: CreateDownloaderDto) {
     const { url, format } = dto;
     const { title } = await this.getVideoData(url);
     const downloader = await this.createDownloader(dto);
     const ext = getExtensionFromFormat(format);
-    const writeStream = await this.createWriteStream(title, ext);
-    downloader.pipe(writeStream);
-    return HttpStatus.OK;
+    const stream = await this.createWriteStream(title, ext);
+    downloader.pipe(stream);
+
+    const fileName = path.basename(stream.path as string);
+    return { fileName };
   }
 
   async createDownloader(dto: CreateDownloaderDto) {
@@ -59,6 +56,7 @@ export class DownloaderService {
     }
     fileName = `${fileName}-${new Date().getTime()}.${ext}`;
     fileName = removeForwardSlashes(fileName);
-    return fs.createWriteStream(path.join(writePath, fileName));
+    const fullPath = path.join(writePath, fileName);
+    return fs.createWriteStream(fullPath);
   }
 }
