@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import {
   getExtensionFromFormat,
+  getMp3FilePath,
+  getMp3FolderPath,
   removeForwardSlashes,
 } from 'src/common/utils/file';
 import ytdl from 'ytdl-core';
@@ -50,13 +52,13 @@ export class DownloaderService {
 
   private async createWriteStream(fileName: string, ext: string) {
     if (!ext) throw new InternalServerErrorException('Invalid file extension!');
-    const writePath = path.join('public', 'mp3');
+    const writePath = getMp3FolderPath();
     if (!fs.existsSync(writePath)) {
       fs.mkdirSync(writePath, { recursive: true });
     }
     fileName = `${fileName}-${new Date().getTime()}.${ext}`;
     fileName = removeForwardSlashes(fileName);
-    const fullPath = path.join(writePath, fileName);
+    const fullPath = getMp3FilePath(fileName);
     return fs.createWriteStream(fullPath);
   }
 }

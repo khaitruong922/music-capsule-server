@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { generateRoomId } from 'src/common/utils/id';
 import {
   CreateRoomDto,
@@ -20,13 +20,15 @@ export class LobbyService {
   async joinLobby(dto: JoinLobbyDto) {
     const { user, socketId } = dto;
     this.lobby.users[socketId] = { ...user, socketId, roomId: null };
+    console.log(`${socketId} has joined the lobby!`);
   }
 
   async leaveLobby(dto: LeaveLobbyDto) {
     const { socketId } = dto;
     const { roomId } = { ...this.lobby.users[socketId] };
-    this.leaveRoom({ roomId, socketId });
+    if (roomId) this.leaveRoom({ roomId, socketId });
     delete this.lobby.users[socketId];
+    console.log(`${socketId} has left the lobby!`);
     return { leaveRoomId: roomId };
   }
 
@@ -82,13 +84,14 @@ export class LobbyService {
 
   async getRoom(id: string) {
     const { rooms } = this.lobby;
-    if (!rooms[id]) throw new Error(`Room not found: ${id}`);
+    if (!rooms[id]) throw new NotFoundException(`Room not found: ${id}`);
     return rooms[id];
   }
 
   async getUser(socketId: string) {
     const { users } = this.lobby;
-    if (!users[socketId]) throw new Error(`User not found: ${socketId}`);
+    if (!users[socketId])
+      throw new NotFoundException(`User not found: ${socketId}`);
     return users[socketId];
   }
 }

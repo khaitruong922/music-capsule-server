@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DownloaderModule } from './core/downloader/downloader.module';
 import { StreamModule } from './core/stream/stream.module';
 import { LobbyModule } from './lobby/lobby.module';
+import { StreamController } from './core/stream/stream.controller';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { LobbyModule } from './lobby/lobby.module';
     StreamModule,
     LobbyModule,
   ],
-  controllers: [],
+  controllers: [StreamController],
   providers: [],
 })
 export class AppModule {}
