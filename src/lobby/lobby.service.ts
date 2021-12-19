@@ -19,18 +19,15 @@ export class LobbyService {
 
   async joinLobby(dto: JoinLobbyDto) {
     const { user, socketId } = dto;
-    this.lobby.users[socketId] = { ...user, socketId, rooms: {} };
+    this.lobby.users[socketId] = { ...user, socketId, roomId: null };
   }
 
   async leaveLobby(dto: LeaveLobbyDto) {
     const { socketId } = dto;
-    const { rooms } = { ...this.lobby.users[socketId] };
-    const roomIds = Object.keys(rooms);
-    roomIds.forEach((roomId) => {
-      this.leaveRoom({ roomId, socketId });
-    });
+    const { roomId } = { ...this.lobby.users[socketId] };
+    this.leaveRoom({ roomId, socketId });
     delete this.lobby.users[socketId];
-    return { leaveRoomIds: roomIds };
+    return { leaveRoomId: roomId };
   }
 
   async createRoom(dto: CreateRoomDto) {
@@ -50,13 +47,11 @@ export class LobbyService {
 
   async joinRoom(dto: JoinRoomDto) {
     const { roomId, socketId } = dto;
-    const userWithRooms = await this.getUser(socketId);
+    const userWithRoom = await this.getUser(socketId);
     const room = await this.getRoom(roomId);
-
-    const { rooms, ...user } = userWithRooms;
-
+    const { roomId: _, ...user } = userWithRoom;
     room.users[socketId] = user;
-    this.lobby.users[socketId].rooms[roomId] = { id: roomId, name: room.name };
+    this.lobby.users[socketId].roomId = roomId;
 
     console.log(`${socketId} has joined room ${roomId}!`);
     return { user };
@@ -68,7 +63,7 @@ export class LobbyService {
     const room = await this.getRoom(roomId);
 
     delete room.users[socketId];
-    delete users[socketId].rooms[roomId];
+    users[socketId].roomId = null;
 
     const shouldDeleteRoom = Object.keys(room.users).length === 0;
     if (shouldDeleteRoom) delete rooms[roomId];

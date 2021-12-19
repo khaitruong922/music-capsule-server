@@ -85,12 +85,8 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
     const { id: socketId } = socket;
-    const { leaveRoomIds } = await this.lobbyService.leaveLobby({ socketId });
-    await Promise.all(
-      leaveRoomIds.map(async (roomId) => {
-        await this.leaveRoom(socket, { roomId });
-      }),
-    );
+    const { leaveRoomId } = await this.lobbyService.leaveLobby({ socketId });
+    if (leaveRoomId) socket.to(leaveRoomId).emit(USER_LEAVE_ROOM, { socketId });
     console.log(`Socket ${socketId} disconnected!`);
   }
 }

@@ -3,7 +3,7 @@ export interface WithSocketId {
 }
 
 export interface Lobby {
-  users: { [socketId: string]: UserWithRooms };
+  users: { [socketId: string]: UserWithRoom };
   rooms: { [roomId: string]: RoomWithUsers };
 }
 
@@ -13,8 +13,8 @@ export interface User {
 
 export interface UserWithSocketId extends User, WithSocketId {}
 
-export interface UserWithRooms extends UserWithSocketId {
-  rooms: { [roomId: string]: Room };
+export interface UserWithRoom extends UserWithSocketId {
+  roomId: string;
 }
 
 export interface Room {
