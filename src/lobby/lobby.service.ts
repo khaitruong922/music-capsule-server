@@ -19,6 +19,8 @@ export class LobbyService {
 
   async joinLobby(dto: JoinLobbyDto) {
     const { user, socketId } = dto;
+    // Already join lobby
+    if (this.lobby.users[socketId]) return;
     this.lobby.users[socketId] = { ...user, socketId, roomId: null };
     console.log(`${socketId} has joined the lobby!`);
   }
@@ -26,7 +28,7 @@ export class LobbyService {
   async leaveLobby(dto: LeaveLobbyDto) {
     const { socketId } = dto;
     const { roomId } = { ...this.lobby.users[socketId] };
-    if (roomId) this.leaveRoom({ roomId, socketId });
+    if (roomId) await this.leaveRoom({ roomId, socketId });
     delete this.lobby.users[socketId];
     console.log(`${socketId} has left the lobby!`);
     return { leaveRoomId: roomId };
@@ -41,9 +43,6 @@ export class LobbyService {
       users: {},
     };
     this.lobby.rooms[roomId] = room;
-
-    await this.joinRoom({ roomId, socketId });
-
     return room;
   }
 

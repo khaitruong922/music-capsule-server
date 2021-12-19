@@ -10,9 +10,11 @@ import {
 import { Server, Socket } from 'socket.io';
 import {
   CREATE_ROOM,
+  JOIN_CREATED_ROOM,
   JOIN_LOBBY,
   JOIN_ROOM,
   LEAVE_ROOM,
+  LOBBY_JOINED,
   ROOM_CREATED,
   ROOM_DELETED,
   USER_JOIN_ROOM,
@@ -40,6 +42,7 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { id: socketId } = socket;
     await this.lobbyService.joinLobby({ ...dto, socketId });
+    socket.emit(LOBBY_JOINED);
   }
 
   @SubscribeMessage(CREATE_ROOM)
@@ -50,6 +53,7 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { id: socketId } = socket;
     const room = await this.lobbyService.createRoom({ ...dto, socketId });
     this.io.emit(ROOM_CREATED, { room });
+    socket.emit(JOIN_CREATED_ROOM, { roomId: room.id });
   }
 
   @SubscribeMessage(JOIN_ROOM)
