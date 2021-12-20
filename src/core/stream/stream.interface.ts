@@ -10,6 +10,10 @@ export interface SongQueues {
   [roomId: string]: Song[];
 }
 
+export interface RoomsTimeout {
+  [roomId: string]: NodeJS.Timeout;
+}
+
 export interface WithRoomId {
   roomId: string;
 }
@@ -18,3 +22,11 @@ export interface AddSongMessageDto {
 }
 
 export interface AddSongDto extends AddSongMessageDto, WithRoomId {}
+
+export interface NextSongEventPayload {
+  roomId: string;
+}
+
+export interface StartSongEventPayload {
+  roomId: string;
+}

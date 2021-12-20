@@ -1,4 +1,5 @@
 import { HttpException } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   MessageBody,
@@ -12,9 +13,11 @@ import {
   ADD_SONG,
   ADD_SONG_FAILED,
   ADD_SONG_SUCCESS,
+  NEXT_SONG,
+  SKIP,
   SONG_ADDED,
 } from './stream.event';
-import { AddSongMessageDto } from './stream.interface';
+import { AddSongMessageDto, NextSongEventPayload } from './stream.interface';
 import { StreamService } from './stream.service';
 
 @WebSocketGateway({ cors: true, origin: true, credential: true })
@@ -45,5 +48,19 @@ export class StreamGateway {
       }
       socket.emit(ADD_SONG_FAILED, { message });
     }
+  }
+
+  @OnEvent(NEXT_SONG)
+  async nextSong(payload: NextSongEventPayload) {
+    const { roomId } = payload;
+    this.io.to(roomId).emit(NEXT_SONG);
+  }
+
+  @SubscribeMessage(SKIP)
+  async skip(@ConnectedSocket() socket: Socket) {
+    const { id: socketId } = socket;
+    const roomId = await this.lobbyService.getUserCurrentRoomId(socketId);
+    console.log(roomId);
+    this.streamService.skip(roomId);
   }
 }
