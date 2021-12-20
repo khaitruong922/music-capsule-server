@@ -13,6 +13,7 @@ export interface DownloadVideoData {
   id: string;
   title: string;
   author: string;
+  length: number;
 }
 
 export type DownloadFileExtension = 'mp3' | 'mp4';

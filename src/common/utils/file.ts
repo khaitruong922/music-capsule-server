@@ -1,4 +1,5 @@
 import path from 'path';
+import sanitize from 'sanitize-filename';
 import { DownloadFileExtension } from 'src/core/downloader/downloader.interface';
 import ytdl from 'ytdl-core';
 
@@ -10,15 +11,11 @@ export function getExtensionFromFormat(
   return null;
 }
 
-export function removeForwardSlashes(s: string) {
-  return s.replace(/\/+/, '');
-}
-
 export function getMp3FolderPath() {
   return path.join(process.cwd(), 'public', 'mp3');
 }
 
 export function getMp3FilePath(filename: string) {
-  filename = removeForwardSlashes(filename);
+  filename = sanitize(filename);
   return path.join(getMp3FolderPath(), filename);
 }

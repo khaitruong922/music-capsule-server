@@ -1,26 +1,49 @@
+import { HttpException } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
-import { ADD_TO_QUEUE } from './stream.event';
-import { AddToQueueDto } from './stream.interface';
+import { Server, Socket } from 'socket.io';
+import { LobbyService } from 'src/lobby/lobby.service';
+import {
+  ADD_SONG,
+  ADD_SONG_FAILED,
+  ADD_SONG_SUCCESS,
+  SONG_ADDED,
+} from './stream.event';
+import { AddSongMessageDto } from './stream.interface';
 import { StreamService } from './stream.service';
 
 @WebSocketGateway({ cors: true, origin: true, credential: true })
 export class StreamGateway {
-  constructor(private readonly streamService: StreamService) {}
+  @WebSocketServer()
+  io: Server;
 
-  @SubscribeMessage(ADD_TO_QUEUE)
-  async addToQueue(
+  constructor(
+    private readonly streamService: StreamService,
+    private readonly lobbyService: LobbyService,
+  ) {}
+
+  @SubscribeMessage(ADD_SONG)
+  async addSong(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() dto: AddToQueueDto,
+    @MessageBody() dto: AddSongMessageDto,
   ) {
-    const { fileName } = await this.streamService.addToQueue(dto);
-    socket.emit(ADD_TO_QUEUE, { fileName });
+    try {
+      const { id: socketId } = socket;
+      const roomId = await this.lobbyService.getUserCurrentRoomId(socketId);
+      const { song } = await this.streamService.addSong({ ...dto, roomId });
+      this.io.to(roomId).emit(SONG_ADDED, { song });
+      socket.emit(ADD_SONG_SUCCESS, { song });
+    } catch (e) {
+      let message = 'An exception occured!';
+      if (e instanceof HttpException) {
+        message = e.message;
+      }
+      socket.emit(ADD_SONG_FAILED, { message });
+    }
   }
 }

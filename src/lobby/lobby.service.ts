@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { generateRoomId } from 'src/common/utils/id';
+import { ROOM_DELETED } from './lobby.event';
 import {
   CreateRoomDto,
   JoinLobbyDto,
@@ -12,6 +14,8 @@ import {
 
 @Injectable()
 export class LobbyService {
+  constructor(private readonly eventEmitter: EventEmitter2) {}
+
   private lobby: Lobby = {
     rooms: {},
     users: {},
@@ -67,7 +71,10 @@ export class LobbyService {
     users[socketId].roomId = null;
 
     const shouldDeleteRoom = Object.keys(room.users).length === 0;
-    if (shouldDeleteRoom) delete rooms[roomId];
+    if (shouldDeleteRoom) {
+      this.eventEmitter.emit(ROOM_DELETED, { roomId });
+      delete rooms[roomId];
+    }
 
     console.log(`${socketId} has left room ${roomId}!`);
     return { shouldDeleteRoom };
@@ -92,5 +99,10 @@ export class LobbyService {
     if (!users[socketId])
       throw new NotFoundException(`User not found: ${socketId}`);
     return users[socketId];
+  }
+
+  async getUserCurrentRoomId(socketId: string) {
+    const user = await this.getUser(socketId);
+    return user.roomId;
   }
 }
