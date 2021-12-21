@@ -45,8 +45,8 @@ export class StreamService {
     const currentSong = queue[0];
     if (!currentSong) return;
 
-    const OFFSET_SECONDS = 1;
-    currentSong.startTime = (Date.now() + OFFSET_SECONDS) / 1000;
+    const OFFSET_SECONDS = 2;
+    currentSong.startTime = Date.now() / 1000 + OFFSET_SECONDS;
     const { length } = currentSong;
     this.eventEmitter.emit(ROOM_SONG_CHANGED, { roomId, song: currentSong });
 
