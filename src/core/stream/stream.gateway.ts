@@ -14,10 +14,15 @@ import {
   ADD_SONG_FAILED,
   ADD_SONG_SUCCESS,
   NEXT_SONG,
+  ROOM_SONG_CHANGED,
   SKIP,
   SONG_ADDED,
 } from './stream.event';
-import { AddSongMessageDto, NextSongEventPayload } from './stream.interface';
+import {
+  AddSongMessageDto,
+  NextSongEventPayload,
+  RoomSongChangedEventPayload,
+} from './stream.interface';
 import { StreamService } from './stream.service';
 
 @WebSocketGateway({ cors: true, origin: true, credential: true })
@@ -37,7 +42,7 @@ export class StreamGateway {
   ) {
     try {
       const { id: socketId } = socket;
-      const roomId = await this.lobbyService.getUserCurrentRoomId(socketId);
+      const roomId = this.lobbyService.getUserCurrentRoomId(socketId);
       const { song } = await this.streamService.addSong({ ...dto, roomId });
       this.io.to(roomId).emit(SONG_ADDED, { song });
       socket.emit(ADD_SONG_SUCCESS, { song });
@@ -51,15 +56,20 @@ export class StreamGateway {
   }
 
   @OnEvent(NEXT_SONG)
-  async nextSong(payload: NextSongEventPayload) {
-    const { roomId } = payload;
+  nextSong(payload: NextSongEventPayload) {
+    const { roomId, song } = payload;
     this.io.to(roomId).emit(NEXT_SONG);
   }
 
+  @OnEvent(ROOM_SONG_CHANGED)
+  roomSongChanged(payload: RoomSongChangedEventPayload) {
+    this.io.emit(ROOM_SONG_CHANGED, payload);
+  }
+
   @SubscribeMessage(SKIP)
-  async skip(@ConnectedSocket() socket: Socket) {
+  skip(@ConnectedSocket() socket: Socket) {
     const { id: socketId } = socket;
-    const roomId = await this.lobbyService.getUserCurrentRoomId(socketId);
+    const roomId = this.lobbyService.getUserCurrentRoomId(socketId);
     console.log(roomId);
     this.streamService.skip(roomId);
   }

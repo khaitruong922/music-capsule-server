@@ -25,8 +25,12 @@ export interface AddSongDto extends AddSongMessageDto, WithRoomId {}
 
 export interface NextSongEventPayload {
   roomId: string;
+  song: Song;
 }
 
 export interface StartSongEventPayload {
+  roomId: string;
+}
+export interface RoomSongChangedEventPayload {
   roomId: string;
 }

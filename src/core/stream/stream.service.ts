@@ -4,7 +4,7 @@ import { RoomDeletedEventPayload, ROOM_DELETED } from 'src/lobby/lobby.event';
 import { Lobby } from 'src/lobby/lobby.interface';
 import { LobbyService } from 'src/lobby/lobby.service';
 import { DownloaderService } from '../downloader/downloader.service';
-import { NEXT_SONG } from './stream.event';
+import { NEXT_SONG, ROOM_SONG_CHANGED } from './stream.event';
 import { AddSongDto, RoomsTimeout, Song, SongQueues } from './stream.interface';
 
 @Injectable()
@@ -48,6 +48,7 @@ export class StreamService {
     const OFFSET_SECONDS = 1;
     currentSong.startTime = (Date.now() + OFFSET_SECONDS) / 1000;
     const { length } = currentSong;
+    this.eventEmitter.emit(ROOM_SONG_CHANGED, { roomId, song: currentSong });
 
     console.log(`Move to next song in ${length} seconds`);
     this.lobby.rooms[roomId].timeout = setTimeout(() => {
@@ -61,6 +62,7 @@ export class StreamService {
     clearTimeout(timeout);
     queue.shift();
     this.nextSong(roomId);
-    this.eventEmitter.emit(NEXT_SONG, { roomId });
+    const song = queue[0];
+    this.eventEmitter.emit(NEXT_SONG, { roomId, song });
   }
 }

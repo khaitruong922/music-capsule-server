@@ -18,6 +18,7 @@ import {
   LOBBY_JOINED,
   ROOM_CREATED,
   ROOM_DELETED,
+  ROOM_USER_COUNT_CHANGED,
   USER_JOIN_ROOM,
   USER_LEAVE_ROOM,
 } from './lobby.event';
@@ -70,6 +71,7 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     socket.join(roomId);
     this.io.to(roomId).emit(USER_JOIN_ROOM, { user });
+    this.updateRoomUserCount(roomId);
   }
 
   @SubscribeMessage(LEAVE_ROOM)
@@ -85,17 +87,28 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     this.io.to(roomId).emit(USER_LEAVE_ROOM, { socketId });
     socket.leave(roomId);
-    if (shouldDeleteRoom) this.io.emit(ROOM_DELETED, { roomId });
+    if (shouldDeleteRoom) {
+      this.io.emit(ROOM_DELETED, { roomId });
+      return;
+    }
+    this.updateRoomUserCount(roomId);
+  }
+
+  updateRoomUserCount(roomId: string) {
+    // Update user count in lobby
+    const room = this.lobbyService.getRoom(roomId);
+    const userCount = Object.keys(room.users).length;
+    this.io.emit(ROOM_USER_COUNT_CHANGED, { roomId, userCount });
   }
 
   handleConnection(@ConnectedSocket() socket: Socket) {
     console.log(`Socket ${socket.id} connected!`);
   }
+
   handleDisconnect(@ConnectedSocket() socket: Socket) {
     const { id: socketId } = socket;
     const { leaveRoomId } = this.lobbyService.leaveLobby({ socketId });
-    if (leaveRoomId)
-      this.io.to(leaveRoomId).emit(USER_LEAVE_ROOM, { socketId });
+    if (leaveRoomId) this.leaveRoom(socket, { roomId: leaveRoomId });
     console.log(`Socket ${socketId} disconnected!`);
   }
 }

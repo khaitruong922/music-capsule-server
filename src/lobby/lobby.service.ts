@@ -36,8 +36,6 @@ export class LobbyService {
   leaveLobby(dto: LeaveLobbyDto) {
     const { socketId } = dto;
     const { roomId } = { ...this.lobby.users[socketId] };
-    if (roomId) this.leaveRoom({ roomId, socketId });
-    delete this.lobby.users[socketId];
     console.log(`${socketId} has left the lobby!`);
     return { leaveRoomId: roomId };
   }

@@ -13,6 +13,7 @@ export const ROOM_DELETED = 'ROOM_DELETED';
 export const POPULATE_ROOMS = 'POPULATE_ROOMS';
 export const USER_JOIN_ROOM = 'USER_JOIN_ROOM';
 export const USER_LEAVE_ROOM = 'USER_LEAVE_ROOM';
+export const ROOM_USER_COUNT_CHANGED = 'ROOM_USER_COUNT_CHANGED';
 
 export interface RoomDeletedEventPayload {
   roomId: string;
