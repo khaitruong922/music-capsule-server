@@ -1,3 +1,5 @@
+import { Song } from 'src/core/stream/stream.interface';
+
 export interface WithSocketId {
   socketId: string;
 }
@@ -24,8 +26,10 @@ export interface Room {
 
 export interface RoomWithUsers extends Room {
   users: {
-    [socketId: string]: UserWithSocketId;
+    [socketId: string]: User;
   };
+  queue: Song[];
+  timeout?: NodeJS.Timeout;
 }
 
 export interface CreateRoomMessageDto {
@@ -52,3 +56,25 @@ export interface LeaveLobbyMessageDto {
   socketId: string;
 }
 export interface LeaveLobbyDto extends LeaveLobbyMessageDto, WithSocketId {}
+
+export interface RoomResponse extends Room {
+  users: Users;
+  queue: Song[];
+}
+
+export interface LobbyResponse {
+  rooms: LobbyRoomsResponse;
+}
+
+export interface LobbyRoomsResponse {
+  [roomId: string]: LobbyRoomResponse;
+}
+
+export interface LobbyRoomResponse extends Room {
+  userCount: number;
+  nowPlaying: Song;
+}
+
+export interface Users {
+  [socketId: string]: User;
+}

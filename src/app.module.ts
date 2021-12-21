@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DownloaderModule } from './core/downloader/downloader.module';
-import { StreamController } from './core/stream/stream.controller';
 import { StreamModule } from './core/stream/stream.module';
 import { LobbyModule } from './lobby/lobby.module';
 
@@ -16,7 +15,7 @@ import { LobbyModule } from './lobby/lobby.module';
     StreamModule,
     LobbyModule,
   ],
-  controllers: [StreamController],
+  controllers: [],
   providers: [],
 })
 export class AppModule {}

@@ -1,22 +1,23 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { LobbyResponse, LobbyRoomResponse } from './lobby.interface';
 import { LobbyService } from './lobby.service';
 
 @Controller('lobby')
 export class LobbyController {
   constructor(private readonly lobbyService: LobbyService) {}
 
-  @Get('rooms')
-  async getRooms() {
-    return this.lobbyService.getRooms();
+  @Get()
+  getLobbyResponse() {
+    return this.lobbyService.getLobbyResponse();
   }
 
   @Get('rooms/:roomId')
-  async getRoom(@Param('roomId') roomId: string) {
-    return this.lobbyService.getRoom(roomId);
+  getRoom(@Param('roomId') roomId: string) {
+    return this.lobbyService.getRoomResponse(roomId);
   }
 
   @Get('users')
-  async getUsers() {
+  getUsers() {
     return this.lobbyService.getUsers();
   }
 }

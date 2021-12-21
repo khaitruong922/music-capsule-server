@@ -8,6 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { lobbyRoomResponse } from 'src/common/utils/room';
 import {
   CREATE_ROOM,
   JOIN_CREATED_ROOM,
@@ -25,6 +26,7 @@ import {
   JoinLobbyMessageDto,
   JoinRoomMessageDto,
   LeaveRoomMessageDto,
+  RoomResponse,
 } from './lobby.interface';
 import { LobbyService } from './lobby.service';
 
@@ -36,23 +38,24 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly lobbyService: LobbyService) {}
 
   @SubscribeMessage(JOIN_LOBBY)
-  async joinLobby(
+  joinLobby(
     @ConnectedSocket() socket: Socket,
     @MessageBody() dto: JoinLobbyMessageDto,
   ) {
     const { id: socketId } = socket;
-    await this.lobbyService.joinLobby({ ...dto, socketId });
+    this.lobbyService.joinLobby({ ...dto, socketId });
     socket.emit(LOBBY_JOINED);
   }
 
   @SubscribeMessage(CREATE_ROOM)
-  async createRoom(
+  createRoom(
     @ConnectedSocket() socket: Socket,
     @MessageBody() dto: CreateRoomMessageDto,
   ) {
     const { id: socketId } = socket;
-    const room = await this.lobbyService.createRoom({ ...dto, socketId });
-    this.io.emit(ROOM_CREATED, { room });
+    const room = this.lobbyService.createRoom({ ...dto, socketId });
+
+    this.io.emit(ROOM_CREATED, { room: lobbyRoomResponse(room) });
     socket.emit(JOIN_CREATED_ROOM, { roomId: room.id });
   }
 
@@ -63,35 +66,36 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { id: socketId } = socket;
     const { roomId } = dto;
-    const { user } = await this.lobbyService.joinRoom({ roomId, socketId });
+    const { user } = this.lobbyService.joinRoom({ roomId, socketId });
 
-    socket.to(roomId).emit(USER_JOIN_ROOM, { user });
+    this.io.to(roomId).emit(USER_JOIN_ROOM, { user });
     socket.join(roomId);
   }
 
   @SubscribeMessage(LEAVE_ROOM)
-  async leaveRoom(
+  leaveRoom(
     @ConnectedSocket() socket: Socket,
     @MessageBody() dto: LeaveRoomMessageDto,
   ) {
     const { roomId } = dto;
     const { id: socketId } = socket;
-    const { shouldDeleteRoom } = await this.lobbyService.leaveRoom({
+    const { shouldDeleteRoom } = this.lobbyService.leaveRoom({
       ...dto,
       socketId,
     });
-    socket.to(roomId).emit(USER_LEAVE_ROOM, { socketId });
+    this.io.to(roomId).emit(USER_LEAVE_ROOM, { socketId });
     socket.leave(roomId);
     if (shouldDeleteRoom) this.io.emit(ROOM_DELETED, { roomId });
   }
 
-  async handleConnection(@ConnectedSocket() socket: Socket) {
+  handleConnection(@ConnectedSocket() socket: Socket) {
     console.log(`Socket ${socket.id} connected!`);
   }
-  async handleDisconnect(@ConnectedSocket() socket: Socket) {
+  handleDisconnect(@ConnectedSocket() socket: Socket) {
     const { id: socketId } = socket;
-    const { leaveRoomId } = await this.lobbyService.leaveLobby({ socketId });
-    if (leaveRoomId) socket.to(leaveRoomId).emit(USER_LEAVE_ROOM, { socketId });
+    const { leaveRoomId } = this.lobbyService.leaveLobby({ socketId });
+    if (leaveRoomId)
+      this.io.to(leaveRoomId).emit(USER_LEAVE_ROOM, { socketId });
     console.log(`Socket ${socketId} disconnected!`);
   }
 }

@@ -1,24 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { RoomDeletedEventPayload, ROOM_DELETED } from 'src/lobby/lobby.event';
+import { Lobby } from 'src/lobby/lobby.interface';
+import { LobbyService } from 'src/lobby/lobby.service';
 import { DownloaderService } from '../downloader/downloader.service';
 import { NEXT_SONG } from './stream.event';
 import { AddSongDto, RoomsTimeout, Song, SongQueues } from './stream.interface';
 
 @Injectable()
 export class StreamService {
-  private songQueues: SongQueues = {};
-  private timeouts: RoomsTimeout = {};
+  private lobby: Lobby;
 
   constructor(
+    private readonly lobbyService: LobbyService,
     private readonly downloaderService: DownloaderService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    this.lobby = this.lobbyService.lobby;
+  }
 
   async addSong(dto: AddSongDto) {
     const { url, roomId } = dto;
-    this.createRoomQueueIfNotExist(roomId);
-    const queue = this.songQueues[roomId];
+    const { queue } = this.lobby.rooms[roomId];
 
     const { fileName, videoData } = await this.downloaderService.saveToDisk({
       url,
@@ -37,8 +40,8 @@ export class StreamService {
   }
 
   nextSong(roomId: string) {
-    this.createRoomQueueIfNotExist(roomId);
-    const queue = this.songQueues[roomId];
+    const { queue } = this.lobby.rooms[roomId];
+
     const currentSong = queue[0];
     if (!currentSong) return;
 
@@ -47,38 +50,17 @@ export class StreamService {
     const { length } = currentSong;
 
     console.log(`Move to next song in ${length} seconds`);
-    this.timeouts[roomId] = setTimeout(() => {
+    this.lobby.rooms[roomId].timeout = setTimeout(() => {
       // Start next song
       this.skip(roomId);
     }, (length + OFFSET_SECONDS) * 1000);
   }
 
   skip(roomId: string) {
-    this.createRoomQueueIfNotExist(roomId);
-    const queue = this.songQueues[roomId];
-    clearTimeout(this.timeouts[roomId]);
+    const { queue, timeout } = this.lobby.rooms[roomId];
+    clearTimeout(timeout);
     queue.shift();
     this.nextSong(roomId);
     this.eventEmitter.emit(NEXT_SONG, { roomId });
-  }
-
-  createRoomQueueIfNotExist(roomId: string) {
-    if (this.songQueues.hasOwnProperty(roomId)) return;
-    this.songQueues[roomId] = [];
-  }
-
-  getQueues() {
-    return this.songQueues;
-  }
-
-  getQueue(roomId: string) {
-    return this.songQueues[roomId];
-  }
-
-  @OnEvent(ROOM_DELETED)
-  deleteQueue(payload: RoomDeletedEventPayload) {
-    const { roomId } = payload;
-    clearTimeout(this.timeouts[roomId]);
-    delete this.songQueues[roomId];
   }
 }
