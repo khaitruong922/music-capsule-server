@@ -68,8 +68,8 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { roomId } = dto;
     const { user } = this.lobbyService.joinRoom({ roomId, socketId });
 
-    this.io.to(roomId).emit(USER_JOIN_ROOM, { user });
     socket.join(roomId);
+    this.io.to(roomId).emit(USER_JOIN_ROOM, { user });
   }
 
   @SubscribeMessage(LEAVE_ROOM)
