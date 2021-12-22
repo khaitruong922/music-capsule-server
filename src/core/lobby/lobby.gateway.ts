@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { lobbyRoomResponse } from 'src/common/utils/room';
+import { filterName } from 'src/common/utils/string';
 import {
   CREATE_ROOM,
   JOIN_CREATED_ROOM,
@@ -79,13 +80,13 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() dto: LeaveRoomMessageDto,
   ) {
-    const { roomId } = dto;
+    const { roomId, user } = dto;
     const { id: socketId } = socket;
     const { shouldDeleteRoom } = this.lobbyService.leaveRoom({
       ...dto,
       socketId,
     });
-    this.io.to(roomId).emit(USER_LEAVE_ROOM, { socketId });
+    this.io.to(roomId).emit(USER_LEAVE_ROOM, { user });
     socket.leave(roomId);
     if (shouldDeleteRoom) {
       this.io.emit(ROOM_DELETED, { roomId });
@@ -107,8 +108,11 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
     const { id: socketId } = socket;
-    const { leaveRoomId } = this.lobbyService.leaveLobby({ socketId });
-    if (leaveRoomId) this.leaveRoom(socket, { roomId: leaveRoomId });
+    const { leaveRoomId, leaveUser } = this.lobbyService.leaveLobby({
+      socketId,
+    });
+    if (leaveRoomId)
+      this.leaveRoom(socket, { roomId: leaveRoomId, user: leaveUser });
     console.log(`Socket ${socketId} disconnected!`);
   }
 }

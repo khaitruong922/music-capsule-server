@@ -35,9 +35,14 @@ export class LobbyService {
 
   leaveLobby(dto: LeaveLobbyDto) {
     const { socketId } = dto;
-    const { roomId } = { ...this.lobby.users[socketId] };
+    const user = this.getUser(socketId);
+    const { roomId } = { ...user };
     console.log(`${socketId} has left the lobby!`);
-    return { leaveRoomId: roomId };
+    delete this.lobby.users[socketId];
+    return {
+      leaveRoomId: roomId,
+      leaveUser: user,
+    };
   }
 
   createRoom(dto: CreateRoomDto) {
@@ -71,8 +76,7 @@ export class LobbyService {
     const room = this.getRoom(roomId);
     const { timeout } = room;
     delete room.users[socketId];
-    users[socketId].roomId = null;
-
+    if (users[socketId]) users[socketId].roomId = null;
     const shouldDeleteRoom = Object.keys(room.users).length === 0;
     if (shouldDeleteRoom) {
       this.eventEmitter.emit(ROOM_DELETED, { roomId });
@@ -94,14 +98,11 @@ export class LobbyService {
 
   getRoom(id: string) {
     const { rooms } = this.lobby;
-    if (!rooms[id]) throw new NotFoundException(`Room not found: ${id}`);
     return rooms[id];
   }
 
   getUser(socketId: string) {
     const { users } = this.lobby;
-    if (!users[socketId])
-      throw new NotFoundException(`User not found: ${socketId}`);
     return users[socketId];
   }
 

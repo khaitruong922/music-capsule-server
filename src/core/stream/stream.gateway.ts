@@ -8,7 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { LobbyService } from 'src/lobby/lobby.service';
+import { LobbyService } from 'src/core/lobby/lobby.service';
 import {
   ADD_SONG,
   ADD_SONG_FAILED,
@@ -47,6 +47,7 @@ export class StreamGateway {
       this.io.to(roomId).emit(SONG_ADDED, { song });
       socket.emit(ADD_SONG_SUCCESS, { song });
     } catch (e) {
+      console.log(e);
       let message = 'An exception occured!';
       if (e instanceof HttpException) {
         message = e.message;

@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { RoomDeletedEventPayload, ROOM_DELETED } from 'src/lobby/lobby.event';
-import { Lobby } from 'src/lobby/lobby.interface';
-import { LobbyService } from 'src/lobby/lobby.service';
+import {
+  RoomDeletedEventPayload,
+  ROOM_DELETED,
+} from 'src/core/lobby/lobby.event';
+import { Lobby } from 'src/core/lobby/lobby.interface';
+import { LobbyService } from 'src/core/lobby/lobby.service';
 import { DownloaderService } from '../downloader/downloader.service';
 import { NEXT_SONG, ROOM_SONG_CHANGED } from './stream.event';
 import { AddSongDto, RoomsTimeout, Song, SongQueues } from './stream.interface';

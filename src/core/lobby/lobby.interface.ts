@@ -44,6 +44,7 @@ export interface JoinRoomDto extends JoinRoomMessageDto, WithSocketId {}
 
 export interface LeaveRoomMessageDto {
   roomId: string;
+  user: User;
 }
 export interface LeaveRoomDto extends LeaveRoomMessageDto, WithSocketId {}
 
