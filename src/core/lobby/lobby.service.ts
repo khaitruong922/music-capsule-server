@@ -37,11 +37,12 @@ export class LobbyService {
     const { socketId } = dto;
     const user = this.getUser(socketId);
     const { roomId } = { ...user };
+    const leaveUser = { ...user };
     console.log(`${socketId} has left the lobby!`);
     delete this.lobby.users[socketId];
     return {
       leaveRoomId: roomId,
-      leaveUser: user,
+      leaveUser,
     };
   }
 
@@ -98,11 +99,14 @@ export class LobbyService {
 
   getRoom(id: string) {
     const { rooms } = this.lobby;
+    if (!rooms[id]) throw new NotFoundException(`Room not found: ${id}`);
     return rooms[id];
   }
 
   getUser(socketId: string) {
     const { users } = this.lobby;
+    if (!users[socketId])
+      throw new NotFoundException(`User not found: ${socketId}`);
     return users[socketId];
   }
 
