@@ -111,8 +111,12 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { leaveRoomId, leaveUser } = this.lobbyService.leaveLobby({
       socketId,
     });
-    if (leaveRoomId)
-      this.leaveRoom(socket, { roomId: leaveRoomId, user: leaveUser });
+    try {
+      if (leaveRoomId)
+        this.leaveRoom(socket, { roomId: leaveRoomId, user: leaveUser });
+    } catch (e) {
+      console.log(e);
+    }
     console.log(`Socket ${socketId} disconnected!`);
   }
 }
