@@ -1,23 +1,43 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import fs from 'fs';
 import path from 'path';
+import { firstValueFrom } from 'rxjs';
 import {
   getExtensionFromFormat,
   getMp3FilePath,
   getMp3FolderPath,
 } from 'src/common/utils/file';
+import { isValidHttpUrl } from 'src/common/utils/url';
 import ytdl from 'ytdl-core';
 import { CreateDownloaderDto, DownloadVideoData } from './downloader.interface';
 
 @Injectable()
 export class DownloaderService {
-  constructor() {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async saveToDisk(dto: CreateDownloaderDto) {
-    const { url, format } = dto;
+    const { format } = dto;
+    let { url } = dto;
+    // Check if input is not URL, then we search and get first result
+    if (!isValidHttpUrl(url)) {
+      url = await this.searchAndGetFirstUrl(url);
+      if (!url)
+        throw new NotFoundException(
+          `There is no video for search query: ${url}`,
+        );
+    }
     const videoData = await this.getVideoData(url);
     const { id } = videoData;
-    const downloader = await this.createDownloader(dto);
+    const downloader = await this.createDownloader({ ...dto, url });
     const ext = getExtensionFromFormat(format);
     const stream = await this.createWriteStream(id, ext);
     const pipeStream = downloader.pipe(stream);
@@ -48,7 +68,7 @@ export class DownloaderService {
     } = videoInfo;
 
     const length = Number(lengthSeconds);
-    const MAX_MINUTES = 15;
+    const MAX_MINUTES = 30;
     if (length > MAX_MINUTES * 60)
       throw new InternalServerErrorException(
         `Video length cannot be longer than ${MAX_MINUTES} minutes`,
@@ -70,5 +90,27 @@ export class DownloaderService {
     fileName = `${fileName}-${new Date().getTime()}.${ext}`;
     const fullPath = getMp3FilePath(fileName);
     return fs.createWriteStream(fullPath);
+  }
+  private async searchAndGetFirstUrl(q: string) {
+    const res = await firstValueFrom(
+      this.httpService.get<any>(
+        `https://www.googleapis.com/youtube/v3/search`,
+        {
+          params: {
+            part: 'snippet',
+            maxResults: 1,
+            q,
+            type: 'video',
+            key: this.configService.get<string>('YOUTUBE_API_KEY'),
+          },
+        },
+      ),
+    );
+    const searchResult = res.data;
+    const videoId = searchResult?.items?.[0]?.id?.videoId;
+    console.log(searchResult);
+    console.log(videoId);
+    if (!videoId) return null;
+    return `https://youtu.be/${videoId}`;
   }
 }

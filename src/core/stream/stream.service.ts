@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import {
-  RoomDeletedEventPayload,
-  ROOM_DELETED,
-} from 'src/core/lobby/lobby.event';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { isValidHttpUrl } from 'src/common/utils/url';
 import { Lobby } from 'src/core/lobby/lobby.interface';
 import { LobbyService } from 'src/core/lobby/lobby.service';
 import { DownloaderService } from '../downloader/downloader.service';
 import { NEXT_SONG, ROOM_SONG_CHANGED } from './stream.event';
-import { AddSongDto, RoomsTimeout, Song, SongQueues } from './stream.interface';
-
+import { AddSongDto, Song } from './stream.interface';
 @Injectable()
 export class StreamService {
   private lobby: Lobby;
@@ -23,7 +19,8 @@ export class StreamService {
   }
 
   async addSong(dto: AddSongDto) {
-    const { url, roomId } = dto;
+    const { roomId } = dto;
+    let { url } = dto;
     const { queue } = this.lobby.rooms[roomId];
 
     const { fileName, videoData } = await this.downloaderService.saveToDisk({
