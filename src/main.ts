@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import path from 'path';
 import { AppModule } from './app.module';
+import { ExceptionFilter } from './common/filter/exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
@@ -18,6 +19,7 @@ async function bootstrap() {
   app.useStaticAssets(path.join(process.cwd(), 'public'), {
     prefix: '/public',
   });
+  app.useGlobalFilters(new ExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
