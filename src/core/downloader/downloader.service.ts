@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import {
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -38,7 +39,13 @@ export class DownloaderService {
     let { url, semitoneShift = 0, playbackSpeed = 1 } = dto;
     // Check if input is not URL, then we search and get first result
     if (!isValidHttpUrl(url)) {
-      url = await this.searchAndGetFirstUrl(url);
+      try {
+        url = await this.searchAndGetFirstUrl(url);
+      } catch (e) {
+        throw new ForbiddenException(
+          'Search limit exceeded. Please insert YouTube URL instead.',
+        );
+      }
       if (!url)
         throw new NotFoundException(
           `There is no video for search query: ${url}`,
