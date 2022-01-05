@@ -99,6 +99,7 @@ export class DownloaderService {
     try {
       videoInfo = await ytdl.getBasicInfo(url);
     } catch (e: unknown) {
+      console.log(e);
       if (e instanceof Error) throw new InternalServerErrorException(e.message);
     }
     const {
