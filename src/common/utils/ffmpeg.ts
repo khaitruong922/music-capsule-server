@@ -11,7 +11,7 @@ export const buildPitchAndTempoString = (
   semitoneShift: number,
   playbackSpeed: number,
 ): string => {
-  const pitchDisplay = `${semitoneShift >= 0 ? '+' : '-'}${semitoneShift}`;
+  const pitchDisplay = `${semitoneShift >= 0 ? '+' : ''}${semitoneShift}`;
 
   // playbackSpeed changed only
   if (semitoneShift === 0 && playbackSpeed !== 1) return `(x${playbackSpeed})`;
