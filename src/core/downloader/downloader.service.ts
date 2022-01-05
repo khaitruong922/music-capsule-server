@@ -8,6 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import fs from 'fs';
 import path from 'path';
 import { firstValueFrom } from 'rxjs';
+import { execAsync } from 'src/common/utils/child_process';
+import {
+  buildPitchAndTempoString,
+  getAudioLengthInSeconds,
+} from 'src/common/utils/ffmpeg';
 import {
   getExtensionFromFormat,
   getMp3FilePath,
@@ -15,7 +20,11 @@ import {
 } from 'src/common/utils/file';
 import { isValidHttpUrl } from 'src/common/utils/url';
 import ytdl from 'ytdl-core';
-import { CreateDownloaderDto, DownloadVideoData } from './downloader.interface';
+import {
+  CreateDownloaderDto,
+  DownloadVideoData,
+  ModifyPitchAndTempoDto,
+} from './downloader.interface';
 
 @Injectable()
 export class DownloaderService {
@@ -26,7 +35,7 @@ export class DownloaderService {
 
   async saveToDisk(dto: CreateDownloaderDto) {
     const { format } = dto;
-    let { url } = dto;
+    let { url, semitoneShift = 0, playbackSpeed = 1 } = dto;
     // Check if input is not URL, then we search and get first result
     if (!isValidHttpUrl(url)) {
       url = await this.searchAndGetFirstUrl(url);
@@ -44,7 +53,23 @@ export class DownloaderService {
     await new Promise((resolve) => pipeStream.on('finish', resolve));
     console.log(videoData);
 
-    const fileName = path.basename(stream.path as string);
+    const filePath = stream.path as string;
+    let fileName = path.basename(filePath);
+
+    // Modify pitch and playbackSpeed if it is not original value
+    if (semitoneShift !== 0 || playbackSpeed !== 1) {
+      const outputFilePath = await this.modifyPitchAndTempo({
+        playbackSpeed,
+        semitoneShift,
+        filePath,
+      });
+      fileName = path.basename(outputFilePath);
+      videoData.title = `${videoData.title} ${buildPitchAndTempoString(
+        semitoneShift,
+        playbackSpeed,
+      )}`;
+      videoData.length = await getAudioLengthInSeconds(outputFilePath);
+    }
     return { fileName, videoData };
   }
 
@@ -53,6 +78,19 @@ export class DownloaderService {
     return ytdl(url, {
       filter: format,
     });
+  }
+
+  async modifyPitchAndTempo(dto: ModifyPitchAndTempoDto): Promise<string> {
+    const { playbackSpeed, semitoneShift, filePath } = dto;
+    const { dir, name, ext } = path.parse(filePath);
+    const outputFileName = `${name}_${semitoneShift}_x${playbackSpeed}${ext}`;
+    const outputFilePath = path.join(dir, outputFileName);
+    const hz = 48000 + 1200 * semitoneShift;
+    console.log(hz);
+    const command = `ffmpeg -y -i ${filePath} -af asetrate=${hz},aresample=48000,atempo=${playbackSpeed} ${outputFilePath}`;
+    await execAsync(command);
+    console.log(command);
+    return outputFilePath;
   }
 
   async getVideoData(url: string): Promise<DownloadVideoData> {

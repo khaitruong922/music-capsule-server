@@ -7,8 +7,15 @@ export interface DownloadRequestBodyDto {
 export interface CreateDownloaderDto {
   url: string;
   format: ytdl.Filter;
+  semitoneShift?: number;
+  playbackSpeed?: number;
 }
 
+export interface ModifyPitchAndTempoDto {
+  semitoneShift: number;
+  playbackSpeed: number;
+  filePath: string;
+}
 export interface DownloadVideoData {
   id: string;
   title: string;

@@ -20,11 +20,10 @@ export class StreamService {
 
   async addSong(dto: AddSongDto) {
     const { roomId } = dto;
-    let { url } = dto;
     const { queue } = this.lobby.rooms[roomId];
 
     const { fileName, videoData } = await this.downloaderService.saveToDisk({
-      url,
+      ...dto,
       format: 'audioonly',
     });
 

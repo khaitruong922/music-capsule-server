@@ -19,6 +19,8 @@ export interface WithRoomId {
 }
 export interface AddSongMessageDto {
   url: string;
+  semitoneShift?: number;
+  playbackSpeed?: number;
 }
 
 export interface AddSongDto extends AddSongMessageDto, WithRoomId {}
