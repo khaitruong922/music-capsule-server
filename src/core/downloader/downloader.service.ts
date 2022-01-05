@@ -93,9 +93,11 @@ export class DownloaderService {
     const outputFileName = `${name}_${semitoneShift}_x${playbackSpeed}${ext}`;
     const outputFilePath = path.join(dir, outputFileName);
     const SAMPLE_RATE = 48000;
-    const hz = SAMPLE_RATE * Math.pow(2, semitoneShift / 12);
+    const modifier = Math.pow(2, semitoneShift / 12);
+    const hz = SAMPLE_RATE * modifier;
+    const tempo = playbackSpeed / modifier;
     console.log(hz);
-    const command = `ffmpeg -y -i ${filePath} -af asetrate=${hz},aresample=${SAMPLE_RATE},atempo=${playbackSpeed} ${outputFilePath}`;
+    const command = `ffmpeg -y -i ${filePath} -af asetrate=${hz},aresample=${SAMPLE_RATE},atempo=${tempo} ${outputFilePath}`;
     await execAsync(command);
     console.log(command);
     return outputFilePath;
