@@ -7,6 +7,13 @@ export const getAudioLengthInSeconds = async (filePath: string) => {
   return Number(stdout);
 };
 
+export const getAudioSampleRate = async (filePath: string) => {
+  const { stdout } = await execAsync(
+    `ffprobe -i ${filePath} -show_entries stream=sample_rate -v quiet -of csv="p=0"`,
+  );
+  return Number(stdout);
+};
+
 export const buildPitchAndTempoString = (
   semitoneShift: number,
   playbackSpeed: number,

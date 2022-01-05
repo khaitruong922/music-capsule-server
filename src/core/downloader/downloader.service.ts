@@ -13,6 +13,7 @@ import { execAsync } from 'src/common/utils/child_process';
 import {
   buildPitchAndTempoString,
   getAudioLengthInSeconds,
+  getAudioSampleRate,
 } from 'src/common/utils/ffmpeg';
 import {
   getExtensionFromFormat,
@@ -92,7 +93,7 @@ export class DownloaderService {
     const { dir, name, ext } = path.parse(filePath);
     const outputFileName = `${name}_${semitoneShift}_x${playbackSpeed}${ext}`;
     const outputFilePath = path.join(dir, outputFileName);
-    const SAMPLE_RATE = 48000;
+    const SAMPLE_RATE = await getAudioSampleRate(filePath);
     const modifier = Math.pow(2, semitoneShift / 12);
     const hz = SAMPLE_RATE * modifier;
     const tempo = playbackSpeed / modifier;
