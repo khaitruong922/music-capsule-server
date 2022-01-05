@@ -43,12 +43,12 @@ export class StreamService {
     const { queue } = this.lobby.rooms[roomId];
 
     const currentSong = queue[0];
+    this.eventEmitter.emit(ROOM_SONG_CHANGED, { roomId, song: currentSong });
     if (!currentSong) return;
 
     const OFFSET_SECONDS = 2;
     currentSong.startTime = Date.now() / 1000 + OFFSET_SECONDS;
     const { length } = currentSong;
-    this.eventEmitter.emit(ROOM_SONG_CHANGED, { roomId, song: currentSong });
 
     console.log(`Move to next song in ${length} seconds`);
     this.lobby.rooms[roomId].timeout = setTimeout(() => {

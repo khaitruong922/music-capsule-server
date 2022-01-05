@@ -42,6 +42,7 @@ export class DownloaderService {
     const stream = await this.createWriteStream(id, ext);
     const pipeStream = downloader.pipe(stream);
     await new Promise((resolve) => pipeStream.on('finish', resolve));
+    console.log(videoData);
 
     const fileName = path.basename(stream.path as string);
     return { fileName, videoData };
@@ -63,7 +64,13 @@ export class DownloaderService {
     }
     const {
       player_response: {
-        videoDetails: { author, videoId, title, lengthSeconds },
+        videoDetails: {
+          author,
+          videoId,
+          title,
+          lengthSeconds,
+          thumbnail: { thumbnails },
+        },
       },
     } = videoInfo;
 
@@ -78,6 +85,7 @@ export class DownloaderService {
       author,
       title,
       length,
+      thumbnailUrl: thumbnails[thumbnails.length - 1]?.url,
     };
   }
 

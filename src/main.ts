@@ -19,7 +19,6 @@ async function bootstrap() {
   app.useStaticAssets(path.join(process.cwd(), 'public'), {
     prefix: '/public',
   });
-  app.useGlobalFilters(new ExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
