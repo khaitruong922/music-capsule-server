@@ -98,8 +98,8 @@ export class DownloaderService {
     let videoInfo: ytdl.videoInfo;
     try {
       videoInfo = await ytdl.getBasicInfo(url);
-    } catch (e) {
-      throw new InternalServerErrorException('Invalid YouTube URL!');
+    } catch (e: unknown) {
+      if (e instanceof Error) throw new InternalServerErrorException(e.message);
     }
     const {
       player_response: {
