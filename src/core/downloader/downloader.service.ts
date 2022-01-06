@@ -8,7 +8,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import fs from 'fs';
 import path from 'path';
-import { firstValueFrom } from 'rxjs';
 import { execAsync } from 'src/common/utils/child_process';
 import {
   buildPitchAndTempoString,
@@ -21,6 +20,7 @@ import {
   getMp3FolderPath,
 } from 'src/common/utils/file';
 import { isValidHttpUrl } from 'src/common/utils/url';
+import * as yt from 'youtube-search-without-api-key';
 import ytdl from 'ytdl-core';
 import {
   CreateDownloaderDto,
@@ -38,6 +38,7 @@ export class DownloaderService {
   async saveToDisk(dto: CreateDownloaderDto) {
     const { format } = dto;
     let { url, semitoneShift = 0, playbackSpeed = 1 } = dto;
+    url = url.trim();
     // Check if input is not URL, then we search and get first result
     if (!isValidHttpUrl(url)) {
       try {
@@ -150,25 +151,11 @@ export class DownloaderService {
     return fs.createWriteStream(fullPath);
   }
   private async searchAndGetFirstUrl(q: string) {
-    const res = await firstValueFrom(
-      this.httpService.get<any>(
-        `https://www.googleapis.com/youtube/v3/search`,
-        {
-          params: {
-            part: 'snippet',
-            maxResults: 1,
-            q,
-            type: 'video',
-            key: this.configService.get<string>('YOUTUBE_API_KEY'),
-          },
-        },
-      ),
-    );
-    const searchResult = res.data;
-    const videoId = searchResult?.items?.[0]?.id?.videoId;
-    console.log(searchResult);
-    console.log(videoId);
-    if (!videoId) return null;
+    const videos = await yt.search(q);
+    const video = videos[0];
+    if (!video) return null;
+    console.log(video);
+    const videoId = video.id.videoId;
     return `https://youtu.be/${videoId}`;
   }
 }
