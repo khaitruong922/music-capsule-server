@@ -13,7 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT') || 3001;
-  app.use(helmet());
+  app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
   app.use(cookieParser());
   app.enableCors({ origin: true, credentials: true });
   app.useStaticAssets(path.join(process.cwd(), 'public'), {
