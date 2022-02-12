@@ -18,6 +18,9 @@ async function bootstrap() {
   app.enableCors({ origin: true, credentials: true });
   app.useStaticAssets(path.join(process.cwd(), 'public'), {
     prefix: '/public',
+    setHeaders: (res, path, stat) => {
+      res.set('Access-Control-Allow-Origin', '*');
+    },
   });
   app.useGlobalPipes(
     new ValidationPipe({
