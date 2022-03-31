@@ -1,31 +1,31 @@
-import { execAsync } from './child_process';
+import { execAsync } from './child_process'
 
 export const getAudioLengthInSeconds = async (filePath: string) => {
-  const { stdout } = await execAsync(
-    `ffprobe -i ${filePath} -show_entries format=duration -v quiet -of csv="p=0"`,
-  );
-  return Number(stdout);
-};
+    const { stdout } = await execAsync(
+        `ffprobe -i ${filePath} -show_entries format=duration -v quiet -of csv="p=0"`,
+    )
+    return Number(stdout)
+}
 
 export const getAudioSampleRate = async (filePath: string) => {
-  const { stdout } = await execAsync(
-    `ffprobe -i ${filePath} -show_entries stream=sample_rate -v quiet -of csv="p=0"`,
-  );
-  return Number(stdout);
-};
+    const { stdout } = await execAsync(
+        `ffprobe -i ${filePath} -show_entries stream=sample_rate -v quiet -of csv="p=0"`,
+    )
+    return Number(stdout)
+}
 
 export const buildPitchAndTempoString = (
-  semitoneShift: number,
-  playbackSpeed: number,
+    semitoneShift: number,
+    playbackSpeed: number,
 ): string => {
-  const pitchDisplay = `${semitoneShift >= 0 ? '+' : ''}${semitoneShift}`;
+    const pitchDisplay = `${semitoneShift >= 0 ? '+' : ''}${semitoneShift}`
 
-  // playbackSpeed changed only
-  if (semitoneShift === 0 && playbackSpeed !== 1) return `(x${playbackSpeed})`;
-  // Pitch changed only
-  if (semitoneShift !== 0 && playbackSpeed === 1) return `(${pitchDisplay})`;
-  // Both playbackSpeed and pitch changed
-  if (semitoneShift !== 0 && playbackSpeed !== 1)
-    return `(x${playbackSpeed}, ${pitchDisplay})`;
-  return ``;
-};
+    // playbackSpeed changed only
+    if (semitoneShift === 0 && playbackSpeed !== 1) return `(x${playbackSpeed})`
+    // Pitch changed only
+    if (semitoneShift !== 0 && playbackSpeed === 1) return `(${pitchDisplay})`
+    // Both playbackSpeed and pitch changed
+    if (semitoneShift !== 0 && playbackSpeed !== 1)
+        return `(x${playbackSpeed}, ${pitchDisplay})`
+    return ``
+}

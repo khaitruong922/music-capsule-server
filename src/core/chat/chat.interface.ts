@@ -1,3 +1,3 @@
 export interface ChatDto {
-  content: string;
+    content: string
 }

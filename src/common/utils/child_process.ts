@@ -1,4 +1,4 @@
-import { promisify } from 'util';
-import { exec } from 'child_process';
+import { promisify } from 'util'
+import { exec } from 'child_process'
 
-export const execAsync = promisify(exec);
+export const execAsync = promisify(exec)
