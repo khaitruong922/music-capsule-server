@@ -127,7 +127,7 @@ export class DownloaderService {
         } = videoInfo
 
         const length = Number(lengthSeconds)
-        const MAX_MINUTES = 30
+        const MAX_MINUTES = 60
         if (length > MAX_MINUTES * 60)
             throw new InternalServerErrorException(
                 `Video length cannot be longer than ${MAX_MINUTES} minutes`,
