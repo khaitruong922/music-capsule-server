@@ -1,6 +1,9 @@
 import ytdl from 'ytdl-core';
 
-export interface DownloadRequestBodyDto {
+export interface DownloadByFileNameDto{
+  fileName: string;
+}
+export interface DownloadByUrlDto {
   url: string;
 }
 
