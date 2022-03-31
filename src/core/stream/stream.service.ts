@@ -22,14 +22,18 @@ export class StreamService {
         const { roomId } = dto
         const { queue } = this.lobby.rooms[roomId]
 
-        const { fileName, videoData } = await this.downloaderService.saveToDisk(
-            {
+        const { fileName, videoData, url } =
+            await this.downloaderService.saveToDisk({
                 ...dto,
                 format: 'audioonly',
-            },
-        )
+            })
 
-        const song: Song = { ...videoData, fileName, startTime: null }
+        const song: Song = {
+            ...videoData,
+            fileName,
+            startTime: null,
+            youtubeUrl: url,
+        }
 
         console.log(`${song.title} has been added to queue!`)
         // Queue has only 1 song - start now

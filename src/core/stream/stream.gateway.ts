@@ -74,7 +74,6 @@ export class StreamGateway {
     skip(@ConnectedSocket() socket: Socket) {
         const { id: socketId } = socket
         const roomId = this.lobbyService.getUserCurrentRoomId(socketId)
-        console.log(roomId)
         this.streamService.skip(roomId)
     }
 }

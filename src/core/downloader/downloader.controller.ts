@@ -17,7 +17,7 @@ export class DownloaderController {
         res.download(filePath)
     }
 
-    @Post('mp3/url')
+    @Post('mp3')
     async downloadMp3(@Res() res: Response, @Body() dto: DownloadByUrlDto) {
         const { url } = dto
         const downloader = await this.downloaderService.createDownloader({

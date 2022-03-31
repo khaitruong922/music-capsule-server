@@ -79,7 +79,7 @@ export class DownloaderService {
             )}`
             videoData.length = await getAudioLengthInSeconds(outputFilePath)
         }
-        return { fileName, videoData }
+        return { fileName, videoData, url }
     }
 
     async createDownloader(dto: CreateDownloaderDto) {
