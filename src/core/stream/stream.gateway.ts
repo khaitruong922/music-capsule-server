@@ -42,12 +42,13 @@ export class StreamGateway {
     ) {
         try {
             const { id: socketId } = socket
+            const { name: username } = this.lobbyService.getUser(socketId)
             const roomId = this.lobbyService.getUserCurrentRoomId(socketId)
             const { song } = await this.streamService.addSong({
                 ...dto,
                 roomId,
             })
-            this.io.to(roomId).emit(SONG_ADDED, { song })
+            this.io.to(roomId).emit(SONG_ADDED, { song, username })
             socket.emit(ADD_SONG_SUCCESS, { song })
         } catch (e) {
             console.log(e)
@@ -61,7 +62,7 @@ export class StreamGateway {
 
     @OnEvent(NEXT_SONG)
     nextSong(payload: NextSongEventPayload) {
-        const { roomId, song } = payload
+        const { roomId } = payload
         this.io.to(roomId).emit(NEXT_SONG)
     }
 
