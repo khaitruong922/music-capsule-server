@@ -49,7 +49,7 @@ export class DownloaderController {
     @Post('mp3/disk')
     async downloadMp3ToDisk(@Body() dto: DownloadByUrlDto) {
         const { url } = dto
-        return this.downloaderService.saveToDisk({
+        return this.downloaderService.download({
             url,
             format: 'audioonly',
         })

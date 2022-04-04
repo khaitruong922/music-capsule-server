@@ -23,7 +23,7 @@ export class StreamService {
         const { queue } = this.lobby.rooms[roomId]
 
         const { fileName, videoData, url } =
-            await this.downloaderService.saveToDisk({
+            await this.downloaderService.download({
                 ...dto,
                 format: 'audioonly',
             })

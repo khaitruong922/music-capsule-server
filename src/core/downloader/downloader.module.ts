@@ -4,7 +4,6 @@ import { DownloaderController } from './downloader.controller'
 import { HttpModule } from '@nestjs/axios'
 
 @Module({
-    imports: [HttpModule],
     controllers: [DownloaderController],
     providers: [DownloaderService],
     exports: [DownloaderService],

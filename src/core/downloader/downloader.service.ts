@@ -4,6 +4,7 @@ import {
     Injectable,
     InternalServerErrorException,
     NotFoundException,
+    OnModuleInit,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import fs from 'fs'
@@ -29,13 +30,14 @@ import {
 } from './downloader.interface'
 
 @Injectable()
-export class DownloaderService {
-    constructor(
-        private readonly httpService: HttpService,
-        private readonly configService: ConfigService,
-    ) {}
-
-    async saveToDisk(dto: CreateDownloaderDto) {
+export class DownloaderService implements OnModuleInit {
+    onModuleInit() {
+        const mp3FolderPath = getMp3FolderPath()
+        if (fs.existsSync(mp3FolderPath)) {
+            fs.rmdirSync(mp3FolderPath, { recursive: true })
+        }
+    }
+    async download(dto: CreateDownloaderDto) {
         const { format } = dto
         let { url, semitoneShift = 0, playbackSpeed = 1 } = dto
         url = url.trim()
@@ -57,28 +59,43 @@ export class DownloaderService {
         const { id } = videoData
         const downloader = await this.createDownloader({ ...dto, url })
         const ext = getExtensionFromFormat(format)
-        const stream = await this.createWriteStream(id, ext)
-        const pipeStream = downloader.pipe(stream)
-        await new Promise((resolve) => pipeStream.on('finish', resolve))
-        console.log(videoData)
 
-        const filePath = stream.path as string
-        let fileName = path.basename(filePath)
+        let fileName = `${id}${ext}`
+        let filePath = getMp3FilePath(fileName)
 
-        // Modify pitch and playbackSpeed if it is not original value
-        if (semitoneShift !== 0 || playbackSpeed !== 1) {
-            const outputFilePath = await this.modifyPitchAndTempo({
-                playbackSpeed,
+        if (!fs.existsSync(filePath)) {
+            console.log('Downloading...')
+            const stream = await this.createWriteStream(filePath)
+            const pipeStream = downloader.pipe(stream)
+            await new Promise((resolve) => pipeStream.on('finish', resolve))
+        }
+
+        const modified = semitoneShift !== 0 || playbackSpeed !== 1
+        if (modified) {
+            const modifiedFileName = this.getModifiedFileName(
+                id,
                 semitoneShift,
-                filePath,
-            })
-            fileName = path.basename(outputFilePath)
+                playbackSpeed,
+                ext,
+            )
+            const modifiedFilePath = getMp3FilePath(modifiedFileName)
+
+            if (!fs.existsSync(modifiedFilePath)) {
+                console.log('Modifying audio...')
+                await this.modifyPitchAndTempo({
+                    playbackSpeed,
+                    semitoneShift,
+                    filePath,
+                })
+            }
+            fileName = modifiedFileName
             videoData.title = `${videoData.title} ${buildPitchAndTempoString(
                 semitoneShift,
                 playbackSpeed,
             )}`
-            videoData.length = await getAudioLengthInSeconds(outputFilePath)
+            videoData.length = await getAudioLengthInSeconds(modifiedFilePath)
         }
+
         return { fileName, videoData, url }
     }
 
@@ -89,20 +106,31 @@ export class DownloaderService {
         })
     }
 
-    async modifyPitchAndTempo(dto: ModifyPitchAndTempoDto): Promise<string> {
+    async modifyPitchAndTempo(dto: ModifyPitchAndTempoDto) {
         const { playbackSpeed, semitoneShift, filePath } = dto
         const { dir, name, ext } = path.parse(filePath)
-        const outputFileName = `${name}_${semitoneShift}_x${playbackSpeed}${ext}`
+        const outputFileName = this.getModifiedFileName(
+            name,
+            semitoneShift,
+            playbackSpeed,
+            ext,
+        )
         const outputFilePath = path.join(dir, outputFileName)
         const SAMPLE_RATE = await getAudioSampleRate(filePath)
         const modifier = Math.pow(2, semitoneShift / 12)
         const hz = SAMPLE_RATE * modifier
         const tempo = playbackSpeed / modifier
-        console.log(hz)
         const command = `ffmpeg -y -i ${filePath} -af asetrate=${hz},aresample=${SAMPLE_RATE},atempo=${tempo} ${outputFilePath}`
         await execAsync(command)
-        console.log(command)
-        return outputFilePath
+    }
+
+    getModifiedFileName(
+        name: string,
+        semitoneShift: number,
+        playbackSpeed: number,
+        ext: string,
+    ): string {
+        return `${name}_${semitoneShift}_x${playbackSpeed}${ext}`
     }
 
     async getVideoData(url: string): Promise<DownloadVideoData> {
@@ -141,22 +169,18 @@ export class DownloaderService {
         }
     }
 
-    private async createWriteStream(fileName: string, ext: string) {
-        if (!ext)
-            throw new InternalServerErrorException('Invalid file extension!')
+    private async createWriteStream(filePath: string): Promise<fs.WriteStream> {
         const writePath = getMp3FolderPath()
         if (!fs.existsSync(writePath)) {
             fs.mkdirSync(writePath, { recursive: true })
         }
-        fileName = `${fileName}-${new Date().getTime()}.${ext}`
-        const fullPath = getMp3FilePath(fileName)
-        return fs.createWriteStream(fullPath)
+        return fs.createWriteStream(filePath)
     }
-    private async searchAndGetFirstUrl(q: string) {
+
+    private async searchAndGetFirstUrl(q: string): Promise<string> {
         const videos = await yt.search(q)
         const video = videos[0]
         if (!video) return null
-        console.log(video)
         const videoId = video.id.videoId
         return `https://youtu.be/${videoId}`
     }
