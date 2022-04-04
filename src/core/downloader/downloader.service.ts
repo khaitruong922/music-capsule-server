@@ -40,26 +40,25 @@ export class DownloaderService implements OnModuleInit {
     async download(dto: CreateDownloaderDto) {
         const { format } = dto
         let { url, semitoneShift = 0, playbackSpeed = 1 } = dto
+        semitoneShift = Math.max(Math.min(semitoneShift, 12), -12)
+        playbackSpeed = Math.max(Math.min(playbackSpeed, 2), 0.5)
         url = url.trim()
         // Check if input is not URL, then we search and get first result
         if (!isValidHttpUrl(url)) {
-            try {
-                url = await this.searchAndGetFirstUrl(url)
-            } catch (e) {
-                throw new ForbiddenException(
-                    'Search limit exceeded. Please insert YouTube URL instead.',
-                )
-            }
-            if (!url)
-                throw new NotFoundException(
-                    `There is no video for search query: ${url}`,
-                )
+            url = await this.searchAndGetFirstUrl(url)
         }
+
+        if (!url) {
+            throw new NotFoundException(
+                `There is no video for search query: ${url}`,
+            )
+        }
+
         const videoData = await this.getVideoData(url)
         const { id } = videoData
         const downloader = await this.createDownloader({ ...dto, url })
-        const ext = getExtensionFromFormat(format)
 
+        const ext = getExtensionFromFormat(format)
         let fileName = `${id}${ext}`
         let filePath = getMp3FilePath(fileName)
 
