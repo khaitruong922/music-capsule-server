@@ -35,7 +35,7 @@ export interface RoomWithUsers extends Room {
 export interface CreateRoomMessageDto {
     roomName: string
 }
-export interface CreateRoomDto extends CreateRoomMessageDto, WithSocketId {}
+export interface CreateRoomDto extends CreateRoomMessageDto {}
 
 export interface JoinRoomMessageDto {
     roomId: string

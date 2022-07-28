@@ -54,8 +54,7 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @ConnectedSocket() socket: Socket,
         @MessageBody() dto: CreateRoomMessageDto,
     ) {
-        const { id: socketId } = socket
-        const room = this.lobbyService.createRoom({ ...dto, socketId })
+        const room = this.lobbyService.createRoom({ ...dto })
 
         this.io.emit(ROOM_CREATED, { room: lobbyRoomResponse(room) })
         socket.emit(JOIN_CREATED_ROOM, { roomId: room.id })
@@ -82,21 +81,16 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
     ) {
         const { roomId, user } = dto
         const { id: socketId } = socket
-        const { shouldDeleteRoom } = this.lobbyService.leaveRoom({
+        this.lobbyService.leaveRoom({
             ...dto,
             socketId,
         })
         this.io.to(roomId).emit(USER_LEAVE_ROOM, { user })
         socket.leave(roomId)
-        if (shouldDeleteRoom) {
-            this.io.emit(ROOM_DELETED, { roomId })
-            return
-        }
         this.updateRoomUserCount(roomId)
     }
 
     updateRoomUserCount(roomId: string) {
-        // Update user count in lobby
         const room = this.lobbyService.getRoom(roomId)
         const userCount = Object.keys(room.users).length
         this.io.emit(ROOM_USER_COUNT_CHANGED, { roomId, userCount })
