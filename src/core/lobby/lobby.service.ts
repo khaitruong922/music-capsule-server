@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { generateRoomId } from 'src/common/utils/id'
 import { lobbyRoomResponse } from 'src/common/utils/room'
-import { ROOM_DELETED } from './lobby.event'
+import { CREATE_ROOM, ROOM_DELETED } from './lobby.event'
 import {
     CreateRoomDto,
     JoinLobbyDto,
@@ -47,8 +47,8 @@ export class LobbyService {
     }
 
     createRoom(dto: CreateRoomDto) {
-        const roomId = generateRoomId()
-        const { roomName } = dto
+        const { id, roomName } = dto
+        const roomId = id ? id : generateRoomId()
         const room: RoomWithUsers = {
             id: roomId,
             name: roomName ? roomName : roomId,
@@ -56,6 +56,7 @@ export class LobbyService {
             queue: [],
         }
         this.lobby.rooms[roomId] = room
+        this.eventEmitter.emit(CREATE_ROOM, room)
         return room
     }
 
@@ -78,6 +79,16 @@ export class LobbyService {
         delete room.users[socketId]
         if (users[socketId]) users[socketId].roomId = null
         console.log(`${socketId} has left room ${roomId}!`)
+        let shouldDeleteRoom = false
+        if (room.queue.length == 0 && Object.keys(room.users).length == 0) {
+            this.deleteRoom(roomId)
+            shouldDeleteRoom = true
+        }
+        return { shouldDeleteRoom }
+    }
+
+    deleteRoom(roomId: string) {
+        delete this.lobby.rooms[roomId]
     }
 
     getRooms() {
@@ -90,7 +101,7 @@ export class LobbyService {
 
     getRoom(id: string) {
         const { rooms } = this.lobby
-        if (!rooms[id]) this.createRoom({ roomName: id })
+        if (!rooms[id]) this.createRoom({ id })
         return rooms[id]
     }
 

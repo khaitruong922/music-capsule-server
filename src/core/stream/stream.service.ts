@@ -4,6 +4,7 @@ import { isValidHttpUrl } from 'src/common/utils/url'
 import { Lobby } from 'src/core/lobby/lobby.interface'
 import { LobbyService } from 'src/core/lobby/lobby.service'
 import { DownloaderService } from '../downloader/downloader.service'
+import { ROOM_DELETED } from '../lobby/lobby.event'
 import { NEXT_SONG, ROOM_SONG_CHANGED } from './stream.event'
 import { AddSongDto, Song } from './stream.interface'
 @Injectable()
@@ -69,5 +70,9 @@ export class StreamService {
         this.nextSong(roomId)
         const song = queue[0]
         this.eventEmitter.emit(NEXT_SONG, { roomId, song })
+        const room = this.lobbyService.getRoom(roomId)
+        if (!song && Object.keys(room.users).length === 0) {
+            this.eventEmitter.emit(ROOM_DELETED, { roomId })
+        }
     }
 }

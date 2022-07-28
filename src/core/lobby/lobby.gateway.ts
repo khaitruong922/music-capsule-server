@@ -1,3 +1,4 @@
+import { OnEvent } from '@nestjs/event-emitter'
 import {
     ConnectedSocket,
     MessageBody,
@@ -25,10 +26,13 @@ import {
 } from './lobby.event'
 import {
     CreateRoomMessageDto,
+    DeleteRoomDto,
     JoinLobbyMessageDto,
     JoinRoomMessageDto,
     LeaveRoomMessageDto,
+    LobbyRoomResponse,
     RoomResponse,
+    RoomWithUsers,
 } from './lobby.interface'
 import { LobbyService } from './lobby.service'
 
@@ -55,9 +59,15 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @MessageBody() dto: CreateRoomMessageDto,
     ) {
         const room = this.lobbyService.createRoom({ ...dto })
+        console.log(room)
 
-        this.io.emit(ROOM_CREATED, { room: lobbyRoomResponse(room) })
+        this.notifyCreateRoom(room)
         socket.emit(JOIN_CREATED_ROOM, { roomId: room.id })
+    }
+
+    @OnEvent(CREATE_ROOM)
+    notifyCreateRoom(room: RoomWithUsers) {
+        this.io.emit(ROOM_CREATED, { room: lobbyRoomResponse(room) })
     }
 
     @SubscribeMessage(JOIN_ROOM)
@@ -81,13 +91,24 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
     ) {
         const { roomId, user } = dto
         const { id: socketId } = socket
-        this.lobbyService.leaveRoom({
+        const { shouldDeleteRoom } = this.lobbyService.leaveRoom({
             ...dto,
             socketId,
         })
         this.io.to(roomId).emit(USER_LEAVE_ROOM, { user })
         socket.leave(roomId)
+        if (shouldDeleteRoom) {
+            this.deleteRoom({ roomId })
+            return
+        }
         this.updateRoomUserCount(roomId)
+    }
+
+    @OnEvent(ROOM_DELETED)
+    deleteRoom({ roomId }: DeleteRoomDto) {
+        console.log(`Room ${roomId} deleted!`)
+        this.lobbyService.deleteRoom(roomId)
+        this.io.emit(ROOM_DELETED, { roomId })
     }
 
     updateRoomUserCount(roomId: string) {
