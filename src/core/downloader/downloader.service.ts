@@ -1,12 +1,9 @@
-import { HttpService } from '@nestjs/axios'
 import {
-    ForbiddenException,
     Injectable,
     InternalServerErrorException,
     NotFoundException,
     OnModuleInit,
 } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
 import fs from 'fs'
 import path from 'path'
 import { execAsync } from 'src/common/utils/child_process'
@@ -55,7 +52,7 @@ export class DownloaderService implements OnModuleInit {
         }
 
         const videoData = await this.getVideoData(url)
-        const { id } = videoData
+        const { id, title } = videoData
         const downloader = await this.createDownloader({ ...dto, url })
 
         const ext = getExtensionFromFormat(format)
@@ -95,7 +92,28 @@ export class DownloaderService implements OnModuleInit {
             videoData.length = await getAudioLengthInSeconds(modifiedFilePath)
         }
 
-        return { fileName, videoData, url }
+        let readableFileName = `${title}${ext}`
+        if (modified)
+            readableFileName = this.getModifiedFileName(
+                title,
+                semitoneShift,
+                playbackSpeed,
+                ext,
+            )
+        if (!fs.existsSync(getMp3FilePath(readableFileName))) {
+            try {
+                console.log(fileName)
+                fs.copyFileSync(
+                    getMp3FilePath(fileName),
+                    getMp3FilePath(readableFileName),
+                )
+            } catch (e) {
+                console.log(e)
+                readableFileName = fileName
+            }
+        }
+
+        return { fileName: readableFileName, videoData, url }
     }
 
     async createDownloader(dto: CreateDownloaderDto) {
@@ -119,7 +137,7 @@ export class DownloaderService implements OnModuleInit {
         const modifier = Math.pow(2, semitoneShift / 12)
         const hz = SAMPLE_RATE * modifier
         const tempo = playbackSpeed / modifier
-        const command = `ffmpeg -y -i ${filePath} -af asetrate=${hz},aresample=${SAMPLE_RATE},atempo=${tempo} ${outputFilePath}`
+        const command = `ffmpeg -y -i "${filePath}" -af asetrate=${hz},aresample=${SAMPLE_RATE},atempo=${tempo} ${outputFilePath}`
         await execAsync(command)
     }
 

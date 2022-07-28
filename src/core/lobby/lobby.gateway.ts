@@ -59,7 +59,6 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @MessageBody() dto: CreateRoomMessageDto,
     ) {
         const room = this.lobbyService.createRoom({ ...dto })
-        console.log(room)
 
         this.notifyCreateRoom(room)
         socket.emit(JOIN_CREATED_ROOM, { roomId: room.id })
@@ -106,7 +105,6 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @OnEvent(ROOM_DELETED)
     deleteRoom({ roomId }: DeleteRoomDto) {
-        console.log(`Room ${roomId} deleted!`)
         this.lobbyService.deleteRoom(roomId)
         this.io.emit(ROOM_DELETED, { roomId })
     }

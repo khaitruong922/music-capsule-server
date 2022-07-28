@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { isValidHttpUrl } from 'src/common/utils/url'
 import { Lobby } from 'src/core/lobby/lobby.interface'
 import { LobbyService } from 'src/core/lobby/lobby.service'
 import { DownloaderService } from '../downloader/downloader.service'

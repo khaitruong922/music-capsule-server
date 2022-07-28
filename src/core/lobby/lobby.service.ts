@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { generateRoomId } from 'src/common/utils/id'
 import { lobbyRoomResponse } from 'src/common/utils/room'
-import { CREATE_ROOM, ROOM_DELETED } from './lobby.event'
+import { CREATE_ROOM } from './lobby.event'
 import {
     CreateRoomDto,
     JoinLobbyDto,

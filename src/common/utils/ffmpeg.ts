@@ -2,14 +2,14 @@ import { execAsync } from './child_process'
 
 export const getAudioLengthInSeconds = async (filePath: string) => {
     const { stdout } = await execAsync(
-        `ffprobe -i ${filePath} -show_entries format=duration -v quiet -of csv="p=0"`,
+        `ffprobe -i "${filePath}" -show_entries format=duration -v quiet -of csv="p=0"`,
     )
     return Number(stdout)
 }
 
 export const getAudioSampleRate = async (filePath: string) => {
     const { stdout } = await execAsync(
-        `ffprobe -i ${filePath} -show_entries stream=sample_rate -v quiet -of csv="p=0"`,
+        `ffprobe -i "${filePath}" -show_entries stream=sample_rate -v quiet -of csv="p=0"`,
     )
     return Number(stdout)
 }
