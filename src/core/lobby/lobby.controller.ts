@@ -1,7 +1,7 @@
-import { Controller, Get, Param } from '@nestjs/common'
-import { LobbyService } from './lobby.service'
+import { Controller, Get, Param } from "@nestjs/common"
+import { LobbyService } from "./lobby.service"
 
-@Controller('lobby')
+@Controller("lobby")
 export class LobbyController {
     constructor(private readonly lobbyService: LobbyService) {}
 
@@ -10,12 +10,12 @@ export class LobbyController {
         return this.lobbyService.getLobbyResponse()
     }
 
-    @Get('rooms/:roomId')
-    getRoom(@Param('roomId') roomId: string) {
+    @Get("rooms/:roomId")
+    getRoom(@Param("roomId") roomId: string) {
         return this.lobbyService.getRoomResponse(roomId)
     }
 
-    @Get('users')
+    @Get("users")
     getUsers() {
         return this.lobbyService.getUsers()
     }

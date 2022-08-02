@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
-import { Lobby } from 'src/core/lobby/lobby.interface'
-import { LobbyService } from 'src/core/lobby/lobby.service'
-import { DownloaderService } from '../downloader/downloader.service'
-import { ROOM_DELETED } from '../lobby/lobby.event'
-import { NEXT_SONG, ROOM_SONG_CHANGED } from './stream.event'
-import { AddSongDto, Song } from './stream.interface'
+import { Injectable } from "@nestjs/common"
+import { EventEmitter2 } from "@nestjs/event-emitter"
+import { Lobby } from "src/core/lobby/lobby.interface"
+import { LobbyService } from "src/core/lobby/lobby.service"
+import { InvalidCommand } from "../chat/chat.interface"
+import { DownloaderService } from "../downloader/downloader.service"
+import { ROOM_DELETED } from "../lobby/lobby.event"
+import { FAST_FORWARD, NEXT_SONG, ROOM_SONG_CHANGED } from "./stream.event"
+import { AddSongDto, FastForwardDto, Song } from "./stream.interface"
 @Injectable()
 export class StreamService {
     private lobby: Lobby
+    private OFFSET_SECONDS = 2
 
     constructor(
         private readonly lobbyService: LobbyService,
@@ -25,7 +27,7 @@ export class StreamService {
         const { fileName, videoData, url } =
             await this.downloaderService.download({
                 ...dto,
-                format: 'audioonly',
+                format: "audioonly",
             })
 
         const song: Song = {
@@ -51,15 +53,46 @@ export class StreamService {
         this.eventEmitter.emit(ROOM_SONG_CHANGED, { roomId, song: currentSong })
         if (!currentSong) return
 
-        const OFFSET_SECONDS = 2
-        currentSong.startTime = Date.now() / 1000 + OFFSET_SECONDS
+        currentSong.startTime = Date.now() / 1000 + this.OFFSET_SECONDS
         const { length } = currentSong
 
-        console.log(`Move to next song in ${length} seconds`)
+        this.scheduleNextSong(roomId, length - this.OFFSET_SECONDS)
+    }
+
+    fastForward(dto: FastForwardDto) {
+        const { seconds, roomId, socketId } = dto
+        const { queue } = this.lobbyService.getRoom(roomId)
+
+        const currentSong = queue[0]
+        if (!currentSong)
+            throw new InvalidCommand("Fast forward failed - no song playing")
+
+        const { length } = currentSong
+        let lengthLeft = length - (Date.now() / 1000 - currentSong.startTime)
+        if (lengthLeft - seconds < 0)
+            throw new InvalidCommand(
+                "Fast forward failed - Song length exceeded",
+            )
+
+        currentSong.startTime -= seconds
+
+        const username = this.lobbyService.getUser(socketId).name
+        this.eventEmitter.emit(FAST_FORWARD, {
+            roomId,
+            song: currentSong,
+            seconds,
+            username,
+        })
+
+        this.scheduleNextSong(roomId, lengthLeft - seconds)
+    }
+
+    scheduleNextSong(roomId: string, seconds: number) {
+        clearTimeout(this.lobby.rooms[roomId].timeout)
+        console.log(`Next song in ${seconds} seconds`)
         this.lobby.rooms[roomId].timeout = setTimeout(() => {
-            // Start next song
             this.skip(roomId)
-        }, (length + OFFSET_SECONDS) * 1000)
+        }, seconds * 1000)
     }
 
     skip(roomId: string) {

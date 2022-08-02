@@ -1,4 +1,4 @@
-import { OnEvent } from '@nestjs/event-emitter'
+import { OnEvent } from "@nestjs/event-emitter"
 import {
     ConnectedSocket,
     MessageBody,
@@ -7,10 +7,9 @@ import {
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
-} from '@nestjs/websockets'
-import { Server, Socket } from 'socket.io'
-import { lobbyRoomResponse } from 'src/common/utils/room'
-import { filterName } from 'src/common/utils/string'
+} from "@nestjs/websockets"
+import { Server, Socket } from "socket.io"
+import { lobbyRoomResponse } from "src/common/utils/room"
 import {
     CREATE_ROOM,
     JOIN_CREATED_ROOM,
@@ -23,18 +22,16 @@ import {
     ROOM_USER_COUNT_CHANGED,
     USER_JOIN_ROOM,
     USER_LEAVE_ROOM,
-} from './lobby.event'
+} from "./lobby.event"
 import {
     CreateRoomMessageDto,
     DeleteRoomDto,
     JoinLobbyMessageDto,
     JoinRoomMessageDto,
     LeaveRoomMessageDto,
-    LobbyRoomResponse,
-    RoomResponse,
     RoomWithUsers,
-} from './lobby.interface'
-import { LobbyService } from './lobby.service'
+} from "./lobby.interface"
+import { LobbyService } from "./lobby.service"
 
 @WebSocketGateway({ cors: true, origin: true, credential: true })
 export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {

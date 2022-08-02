@@ -1,4 +1,4 @@
-import ytdl from 'ytdl-core'
+import ytdl from "ytdl-core"
 
 export interface DownloadByFileNameDto {
     fileName: string
@@ -27,4 +27,4 @@ export interface DownloadVideoData {
     thumbnailUrl: string
 }
 
-export type DownloadFileExtension = 'mp3' | 'mp4'
+export type DownloadFileExtension = "mp3" | "mp4"

@@ -27,9 +27,20 @@ export interface AddSongMessageDto {
 
 export interface AddSongDto extends AddSongMessageDto, WithRoomId {}
 
-export interface NextSongEventPayload {
-    roomId: string
+export interface FastForwardDto extends WithRoomId {
+    seconds: number
+    socketId: string
+}
+
+export interface NextSongEventPayload extends WithRoomId {
     song: Song
+    username: string
+}
+
+export interface FastForwardPayload extends WithRoomId {
+    song: Song
+    username: string
+    seconds: number
 }
 
 export interface StartSongEventPayload {

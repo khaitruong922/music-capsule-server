@@ -1,4 +1,4 @@
-import { Song } from 'src/core/stream/stream.interface'
+import { Song } from "src/core/stream/stream.interface"
 
 export interface WithSocketId {
     socketId: string

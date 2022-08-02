@@ -1,7 +1,7 @@
 import {
     LobbyRoomResponse,
     RoomWithUsers,
-} from 'src/core/lobby/lobby.interface'
+} from "src/core/lobby/lobby.interface"
 
 export function lobbyRoomResponse(room: RoomWithUsers): LobbyRoomResponse {
     const { id, name, queue, users } = room

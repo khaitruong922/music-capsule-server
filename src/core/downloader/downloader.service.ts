@@ -3,28 +3,28 @@ import {
     InternalServerErrorException,
     NotFoundException,
     OnModuleInit,
-} from '@nestjs/common'
-import fs from 'fs'
-import path from 'path'
-import { execAsync } from 'src/common/utils/child_process'
+} from "@nestjs/common"
+import fs from "fs"
+import path from "path"
+import { execAsync } from "src/common/utils/child_process"
 import {
     buildPitchAndTempoString,
     getAudioLengthInSeconds,
     getAudioSampleRate,
-} from 'src/common/utils/ffmpeg'
+} from "src/common/utils/ffmpeg"
 import {
     getExtensionFromFormat,
     getMp3FilePath,
     getMp3FolderPath,
-} from 'src/common/utils/file'
-import { isValidHttpUrl } from 'src/common/utils/url'
-import * as yt from 'youtube-search-without-api-key'
-import ytdl from 'ytdl-core'
+} from "src/common/utils/file"
+import { isValidHttpUrl } from "src/common/utils/url"
+import * as yt from "youtube-search-without-api-key"
+import ytdl from "ytdl-core"
 import {
     CreateDownloaderDto,
     DownloadVideoData,
     ModifyPitchAndTempoDto,
-} from './downloader.interface'
+} from "./downloader.interface"
 
 @Injectable()
 export class DownloaderService implements OnModuleInit {
@@ -61,10 +61,10 @@ export class DownloaderService implements OnModuleInit {
         let filePath = getMp3FilePath(fileName)
 
         if (!fs.existsSync(filePath)) {
-            console.log('Downloading...')
+            console.log("Downloading...")
             const stream = await this.createWriteStream(filePath)
             const pipeStream = downloader.pipe(stream)
-            await new Promise((resolve) => pipeStream.on('finish', resolve))
+            await new Promise((resolve) => pipeStream.on("finish", resolve))
         }
 
         const modified = semitoneShift !== 0 || playbackSpeed !== 1
@@ -78,7 +78,7 @@ export class DownloaderService implements OnModuleInit {
             const modifiedFilePath = getMp3FilePath(modifiedFileName)
 
             if (!fs.existsSync(modifiedFilePath)) {
-                console.log('Modifying audio...')
+                console.log("Modifying audio...")
                 await this.modifyPitchAndTempo({
                     playbackSpeed,
                     semitoneShift,
