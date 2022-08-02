@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Param, Post, Res } from "@nestjs/common"
+import { Controller, Get, Param, Res } from "@nestjs/common"
 import { Response } from "express"
 import { getMp3FilePath } from "src/common/utils/file"
-import { DownloadByUrlDto } from "./downloader.interface"
 import { DownloaderService } from "./downloader.service"
 @Controller("/download")
 export class DownloaderController {
@@ -13,7 +12,9 @@ export class DownloaderController {
         @Param("fileName") fileName: string,
     ) {
         const filePath = getMp3FilePath(fileName)
-        const ext = filePath.split(".").pop()
-        res.download(filePath)
+        res.download(
+            filePath,
+            this.downloaderService.getTitleFileName(filePath),
+        )
     }
 }

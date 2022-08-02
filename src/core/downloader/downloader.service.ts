@@ -28,7 +28,8 @@ import {
 
 @Injectable()
 export class DownloaderService implements OnModuleInit {
-    idToTitle
+    idToTitle = {}
+
     onModuleInit() {
         const mp3FolderPath = getMp3FolderPath()
         if (fs.existsSync(mp3FolderPath)) {
@@ -54,6 +55,8 @@ export class DownloaderService implements OnModuleInit {
 
         const videoData = await this.getVideoData(url)
         const { id, title } = videoData
+        this.idToTitle[id] = title
+
         const downloader = await this.createDownloader({ ...dto, url })
 
         const ext = getExtensionFromFormat(format)
@@ -128,6 +131,21 @@ export class DownloaderService implements OnModuleInit {
         ext: string,
     ): string {
         return `${name}_${semitoneShift}_x${playbackSpeed}${ext}`
+    }
+
+    getTitleFileName(filePath: string): string {
+        const parsedPath = path.parse(filePath)
+        const parts = parsedPath.name.split("_")
+        const id = parts[0]
+        const title = this.idToTitle[id]
+        let fileName = title
+        if (parts[1] && parts[2]) {
+            const semitoneShift = Number(parts[1])
+            const tempo = Number(parts[2].substring(1))
+            fileName += ` ${buildPitchAndTempoString(semitoneShift, tempo)}`
+        }
+        fileName += parsedPath.ext
+        return fileName
     }
 
     async getVideoData(url: string): Promise<DownloadVideoData> {
