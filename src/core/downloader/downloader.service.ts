@@ -28,6 +28,7 @@ import {
 
 @Injectable()
 export class DownloaderService implements OnModuleInit {
+    idToTitle
     onModuleInit() {
         const mp3FolderPath = getMp3FolderPath()
         if (fs.existsSync(mp3FolderPath)) {
@@ -92,28 +93,7 @@ export class DownloaderService implements OnModuleInit {
             videoData.length = await getAudioLengthInSeconds(modifiedFilePath)
         }
 
-        let readableFileName = `${title}${ext}`
-        if (modified)
-            readableFileName = this.getModifiedFileName(
-                title,
-                semitoneShift,
-                playbackSpeed,
-                ext,
-            )
-        if (!fs.existsSync(getMp3FilePath(readableFileName))) {
-            try {
-                console.log(fileName)
-                fs.copyFileSync(
-                    getMp3FilePath(fileName),
-                    getMp3FilePath(readableFileName),
-                )
-            } catch (e) {
-                console.log(e)
-                readableFileName = fileName
-            }
-        }
-
-        return { fileName: readableFileName, videoData, url }
+        return { fileName, videoData, url }
     }
 
     async createDownloader(dto: CreateDownloaderDto) {

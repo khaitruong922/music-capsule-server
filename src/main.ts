@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 import path from 'path'
 import { AppModule } from './app.module'
-import { ExceptionFilter } from './common/filter/exception.filter'
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {})
@@ -31,8 +30,8 @@ async function bootstrap() {
     )
 
     const config = new DocumentBuilder()
-        .setTitle('Music Streaming App API')
-        .setDescription('Documentation for Music Streaming App API')
+        .setTitle('Music Capsule API')
+        .setDescription('Documentation for Music Capsule API')
         .setVersion('1.0')
         .addBearerAuth()
         .build()
@@ -44,7 +43,7 @@ async function bootstrap() {
             operationsSorter: 'method',
             tagsSorter: 'alpha',
             customCss: '.swagger-ui .topbar { display: none }',
-            customSiteTitle: 'Music Streaming App API',
+            customSiteTitle: 'Music Capsule API',
         },
     })
 
