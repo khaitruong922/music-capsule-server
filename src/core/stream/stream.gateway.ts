@@ -15,6 +15,7 @@ import {
     ADD_SONG_SUCCESS,
     FAST_FORWARD,
     NEXT_SONG,
+    QUEUE_CHANGED,
     ROOM_SONG_CHANGED,
     SKIP,
     SONG_ADDED,
@@ -23,6 +24,7 @@ import {
     AddSongMessageDto,
     FastForwardPayload,
     NextSongEventPayload,
+    QueueChangedPayload,
     RoomSongChangedEventPayload,
 } from "./stream.interface"
 import { StreamService } from "./stream.service"
@@ -75,20 +77,28 @@ export class StreamGateway {
 
     @OnEvent(FAST_FORWARD)
     fastForward(payload: FastForwardPayload) {
-        const { roomId, song, username, seconds } = payload
-        this.io.to(roomId).emit(FAST_FORWARD, { song, username, seconds })
+        const { roomId } = payload
+        this.io.to(roomId).emit(FAST_FORWARD, payload)
+    }
+
+    @OnEvent(QUEUE_CHANGED)
+    queueChanged(payload: QueueChangedPayload) {
+        const { roomId } = payload
+        this.io.to(roomId).emit(QUEUE_CHANGED, payload)
     }
 
     @SubscribeMessage(SKIP)
     skip(@ConnectedSocket() socket: Socket) {
         const { id: socketId } = socket
         const roomId = this.lobbyService.getUserCurrentRoomId(socketId)
-        const username = this.lobbyService.getUser(socketId)?.name
         const title = this.lobbyService.getRoom(roomId)?.queue[0]?.title
         this.streamService.skip(roomId)
-        this.io.to(roomId).emit(SKIP, {
-            username,
-            title,
-        })
+        this.skipEvent({ socketId, title })
+    }
+    @OnEvent(SKIP)
+    skipEvent(payload: { socketId: string; title: string }) {
+        const { socketId } = payload
+        const username = this.lobbyService.getUser(socketId)?.name
+        this.io.emit(SKIP, { ...payload, username })
     }
 }

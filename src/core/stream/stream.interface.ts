@@ -32,6 +32,11 @@ export interface FastForwardDto extends WithRoomId {
     socketId: string
 }
 
+export interface SkipIndexDto extends WithRoomId {
+    i: number
+    socketId: string
+}
+
 export interface NextSongEventPayload extends WithRoomId {
     song: Song
     username: string
@@ -41,6 +46,11 @@ export interface FastForwardPayload extends WithRoomId {
     song: Song
     username: string
     seconds: number
+}
+export interface QueueChangedPayload extends WithRoomId {
+    username: string
+    title: string
+    queue: Song[]
 }
 
 export interface StartSongEventPayload {

@@ -2,11 +2,22 @@ import { Injectable } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { Lobby } from "src/core/lobby/lobby.interface"
 import { LobbyService } from "src/core/lobby/lobby.service"
-import { InvalidCommand } from "../chat/chat.interface"
+import { InvalidFastForward, InvalidSkip } from "../chat/chat.exception"
 import { DownloaderService } from "../downloader/downloader.service"
 import { ROOM_DELETED } from "../lobby/lobby.event"
-import { FAST_FORWARD, NEXT_SONG, ROOM_SONG_CHANGED } from "./stream.event"
-import { AddSongDto, FastForwardDto, Song } from "./stream.interface"
+import {
+    FAST_FORWARD,
+    NEXT_SONG,
+    QUEUE_CHANGED,
+    ROOM_SONG_CHANGED,
+    SKIP,
+} from "./stream.event"
+import {
+    AddSongDto,
+    FastForwardDto,
+    SkipIndexDto,
+    Song,
+} from "./stream.interface"
 @Injectable()
 export class StreamService {
     private lobby: Lobby
@@ -64,15 +75,12 @@ export class StreamService {
         const { queue } = this.lobbyService.getRoom(roomId)
 
         const currentSong = queue[0]
-        if (!currentSong)
-            throw new InvalidCommand("Fast forward failed - no song playing")
+        if (!currentSong) throw new InvalidFastForward("No song playing")
 
         const { length } = currentSong
         let lengthLeft = length - (Date.now() / 1000 - currentSong.startTime)
         if (lengthLeft - seconds < 0)
-            throw new InvalidCommand(
-                "Fast forward failed - Song length exceeded",
-            )
+            throw new InvalidFastForward("Song length exceeded")
 
         currentSong.startTime -= seconds
 
@@ -106,5 +114,30 @@ export class StreamService {
         if (!song && Object.keys(room.users).length === 0) {
             this.eventEmitter.emit(ROOM_DELETED, { roomId })
         }
+    }
+
+    skipIndex(dto: SkipIndexDto) {
+        const { i, roomId, socketId } = dto
+        const room = this.lobbyService.getRoom(roomId)
+        const { queue } = room
+        if (queue.length === 0) throw new InvalidSkip("Queue is empty")
+        if (i >= queue.length)
+            throw new InvalidSkip(`Song number ${i + 1} not in queue`)
+        if (i == 0) {
+            const { title } = queue[0]
+            this.eventEmitter.emit(SKIP, { title, socketId })
+            this.skip(roomId)
+            return
+        }
+        const user = this.lobbyService.getUser(socketId)
+        const { name: username } = user
+        const song = queue.splice(i, 1)
+        const title = song[0].title
+        this.eventEmitter.emit(QUEUE_CHANGED, {
+            roomId,
+            queue,
+            username,
+            title,
+        })
     }
 }

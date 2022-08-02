@@ -3,15 +3,14 @@ export interface ChatDto {
     content: string
 }
 
-export interface FastForwardDto {
+export interface FastForwardCommandDto {
     type: "ff"
     seconds: number
 }
 
-export type MessageDto = ChatDto | FastForwardDto
-
-export class InvalidCommand extends Error {
-    constructor(message: string) {
-        super(message)
-    }
+export interface SkipIndexCommandDto {
+    type: "skip"
+    i: number
 }
+
+export type MessageDto = ChatDto | FastForwardCommandDto | SkipIndexCommandDto
