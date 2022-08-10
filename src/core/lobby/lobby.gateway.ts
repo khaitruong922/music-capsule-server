@@ -125,7 +125,7 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
             if (leaveRoomId)
                 this.leaveRoom(socket, { roomId: leaveRoomId, user: leaveUser })
         } catch (e) {
-            console.log(e)
+            console.log("User not in lobby!")
         }
         console.log(`Socket ${socketId} disconnected!`)
     }
