@@ -33,7 +33,7 @@ export class DownloaderService implements OnModuleInit {
     onModuleInit() {
         const mp3FolderPath = getMp3FolderPath()
         if (fs.existsSync(mp3FolderPath)) {
-            fs.rmdirSync(mp3FolderPath, { recursive: true })
+            fs.rmSync(mp3FolderPath, { recursive: true })
         }
     }
     async download(dto: CreateDownloaderDto) {
