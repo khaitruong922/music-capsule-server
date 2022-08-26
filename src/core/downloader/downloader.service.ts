@@ -167,7 +167,7 @@ export class DownloaderService implements OnModuleInit {
             },
         } = videoInfo
         let thumbnailUrl = null
-        if (thumbnails) {
+        if (Array.isArray(thumbnails) && thumbnails.length > 0) {
             thumbnailUrl = thumbnails[thumbnails.length - 1].url
         }
 
