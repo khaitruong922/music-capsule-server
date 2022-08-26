@@ -158,14 +158,12 @@ export class DownloaderService implements OnModuleInit {
                 throw new InternalServerErrorException(e.message)
         }
         const {
-            player_response: {
-                videoDetails: {
-                    author,
-                    videoId,
-                    title,
-                    lengthSeconds,
-                    thumbnails,
-                },
+            videoDetails: {
+                author: { name: channel },
+                title,
+                thumbnails,
+                lengthSeconds,
+                videoId,
             },
         } = videoInfo
         let thumbnailUrl = null
@@ -181,7 +179,7 @@ export class DownloaderService implements OnModuleInit {
             )
         return {
             id: videoId,
-            author,
+            channel,
             title,
             length,
             thumbnailUrl,

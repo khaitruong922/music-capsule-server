@@ -1,7 +1,7 @@
 export interface Song {
     fileName: string
     title: string
-    author: string
+    channel: string
     length: number
     startTime?: number
     thumbnailUrl: string

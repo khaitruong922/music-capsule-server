@@ -22,7 +22,7 @@ export interface ModifyPitchAndTempoDto {
 export interface DownloadVideoData {
     id: string
     title: string
-    author: string
+    channel: string
     length: number
     thumbnailUrl: string
 }
