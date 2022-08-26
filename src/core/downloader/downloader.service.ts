@@ -164,10 +164,14 @@ export class DownloaderService implements OnModuleInit {
                     videoId,
                     title,
                     lengthSeconds,
-                    thumbnail: { thumbnails },
+                    thumbnails,
                 },
             },
         } = videoInfo
+        let thumbnailUrl = null
+        if (thumbnails) {
+            thumbnailUrl = thumbnails[thumbnails.length - 1].url
+        }
 
         const length = Number(lengthSeconds)
         const MAX_MINUTES = 60
@@ -180,7 +184,7 @@ export class DownloaderService implements OnModuleInit {
             author,
             title,
             length,
-            thumbnailUrl: thumbnails[thumbnails.length - 1]?.url,
+            thumbnailUrl,
         }
     }
 
