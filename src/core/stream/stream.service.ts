@@ -78,7 +78,7 @@ export class StreamService {
         if (!currentSong) throw new InvalidFastForward("No song playing")
 
         const { length } = currentSong
-        let lengthLeft = length - (Date.now() / 1000 - currentSong.startTime)
+        const lengthLeft = length - (Date.now() / 1000 - currentSong.startTime)
         if (lengthLeft - seconds < 0)
             throw new InvalidFastForward("Song length exceeded")
 

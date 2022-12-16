@@ -61,7 +61,7 @@ export class DownloaderService implements OnModuleInit {
 
         const ext = getExtensionFromFormat(format)
         let fileName = `${id}${ext}`
-        let filePath = getMp3FilePath(fileName)
+        const filePath = getMp3FilePath(fileName)
 
         if (!fs.existsSync(filePath)) {
             console.log("Downloading...")
