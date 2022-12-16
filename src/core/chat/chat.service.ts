@@ -9,7 +9,6 @@ import {
 @Injectable()
 export class ChatService {
     private COMMAND_PREFIX = "/"
-    constructor() {}
     parseMessage(message: string): MessageDto {
         if (message.startsWith(this.COMMAND_PREFIX)) {
             if (message.startsWith(`${this.COMMAND_PREFIX}ff`))

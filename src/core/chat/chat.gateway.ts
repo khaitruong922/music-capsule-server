@@ -10,12 +10,12 @@ import { filterChat } from "src/common/utils/string"
 import { LobbyService } from "../lobby/lobby.service"
 import { StreamService } from "../stream/stream.service"
 import { CHAT, INVALID_COMMAND, USER_CHAT } from "./chat.event"
-import { ChatDto, MessageDto } from "./chat.interface"
 import {
     InvalidCommand,
     InvalidFastForward,
     InvalidSkip,
 } from "./chat.exception"
+import { ChatDto, MessageDto } from "./chat.interface"
 import { ChatService } from "./chat.service"
 
 @WebSocketGateway({ cors: true, origin: true, credential: true })

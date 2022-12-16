@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
-import { LobbyService } from "./lobby.service"
-import { LobbyGateway } from "./lobby.gateway"
 import { LobbyController } from "./lobby.controller"
+import { LobbyGateway } from "./lobby.gateway"
+import { LobbyService } from "./lobby.service"
 
 @Module({
     providers: [LobbyGateway, LobbyService],

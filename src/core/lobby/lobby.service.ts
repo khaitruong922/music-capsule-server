@@ -64,7 +64,7 @@ export class LobbyService {
         const { roomId, socketId } = dto
         const userWithRoom = this.getUser(socketId)
         const room = this.getRoom(roomId)
-        const { roomId: _, ...user } = userWithRoom
+        const { ...user } = userWithRoom
         room.users[socketId] = user
         this.lobby.users[socketId].roomId = roomId
 

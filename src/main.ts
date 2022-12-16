@@ -17,6 +17,7 @@ async function bootstrap() {
     app.enableCors({ origin: true, credentials: true })
     app.useStaticAssets(path.join(process.cwd(), "public"), {
         prefix: "/public",
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         setHeaders: (res, path, stat) => {
             res.set("Access-Control-Allow-Origin", "*")
         },
