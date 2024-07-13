@@ -45,9 +45,7 @@
         "rxjs": "^7.5.5",
         "sanitize-filename": "^1.6.3",
         "socket.io": "^4.7.5",
-        "swagger-ui-express": "^4.3.0",
-        "youtube-search-api": "^1.2.2",
-        "youtube-search-without-api-key": "^1.0.7"
+        "swagger-ui-express": "^4.3.0"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.4.2",

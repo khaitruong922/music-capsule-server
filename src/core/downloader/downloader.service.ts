@@ -1,3 +1,4 @@
+import ytdl from "@distube/ytdl-core"
 import {
     Injectable,
     InternalServerErrorException,
@@ -18,14 +19,12 @@ import {
     getMp3FolderPath,
 } from "src/common/utils/file"
 import { isValidHttpUrl } from "src/common/utils/url"
-import * as yt from "youtube-search-without-api-key"
-import ytdl from "@distube/ytdl-core"
+import { getFirstVideoId } from "src/common/utils/youtube-search"
 import {
     CreateDownloaderDto,
     DownloadVideoData,
     ModifyPitchAndTempoDto,
 } from "./downloader.interface"
-import { getFirstVideoId } from "src/common/utils/youtube-search"
 
 @Injectable()
 export class DownloaderService implements OnModuleInit {

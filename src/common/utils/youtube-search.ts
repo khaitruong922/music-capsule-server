@@ -5,7 +5,7 @@ const youtubeEndpoint = `https://www.youtube.com`
 export const getFirstVideoId = async (
     keyword: string,
 ): Promise<string | undefined> => {
-    let endpoint = `${youtubeEndpoint}/results?search_query=${keyword}`
+    const endpoint = `${youtubeEndpoint}/results?search_query=${keyword}`
     try {
         const videoEndpoint = `${endpoint}&sp=EgIQAQ%3D%3D`
         const page = await getYoutubeInitData(videoEndpoint)
