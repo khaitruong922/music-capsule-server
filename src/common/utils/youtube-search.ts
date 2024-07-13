@@ -2,57 +2,31 @@ import axios from "axios"
 const youtubeEndpoint = `https://www.youtube.com`
 
 // source: https://github.com/damonwonghv/youtube-search-api
-export const getListByKeywords = async (keyword: string, limit = 1) => {
+export const getFirstVideoId = async (
+    keyword: string,
+): Promise<string | undefined> => {
     let endpoint = `${youtubeEndpoint}/results?search_query=${keyword}`
     try {
         const videoEndpoint = `${endpoint}&sp=EgIQAQ%3D%3D`
         const page = await getYoutubeInitData(videoEndpoint)
 
-        const sectionListRenderer = await page.initData.contents
-            .twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer
-
-        let contToken = {}
-
+        const sectionListRenderer =
+            page.initData.contents.twoColumnSearchResultsRenderer
+                .primaryContents.sectionListRenderer
         let items = []
 
-        await sectionListRenderer.contents.forEach((content) => {
-            if (content.continuationItemRenderer) {
-                contToken =
-                    content.continuationItemRenderer.continuationEndpoint
-                        .continuationCommand.token
-            } else if (content.itemSectionRenderer) {
-                content.itemSectionRenderer.contents.forEach((item) => {
-                    if (item.channelRenderer) {
-                        let channelRenderer = item.channelRenderer
-                        items.push({
-                            id: channelRenderer.channelId,
-                            type: "channel",
-                            thumbnail: channelRenderer.thumbnail,
-                            title: channelRenderer.title.simpleText,
-                        })
-                    } else {
-                        let videoRender = item.videoRenderer
-                        if (videoRender && videoRender.videoId) {
-                            items.push(createVideoRender(item))
-                        }
-                    }
-                })
+        for (const content of sectionListRenderer.contents) {
+            const { itemSectionRenderer } = content
+            if (!itemSectionRenderer) continue
+            for (const item of itemSectionRenderer.contents) {
+                if (item?.videoRenderer?.videoId) {
+                    items.push(createVideoRender(item))
+                    break
+                }
             }
-        })
-        const apiToken = await page.apiToken
-        const context = await page.context
-        const nextPageContext = {
-            context: context,
-            continuation: contToken,
+            if (items.length > 0) break
         }
-        const itemsResult = limit != 0 ? items.slice(0, limit) : items
-        return await Promise.resolve({
-            items: itemsResult,
-            nextPage: {
-                nextPageToken: apiToken,
-                nextPageContext: nextPageContext,
-            },
-        })
+        return items?.[0]?.id
     } catch (ex) {
         console.error(ex)
         return await Promise.reject(ex)

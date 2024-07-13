@@ -25,7 +25,7 @@ import {
     DownloadVideoData,
     ModifyPitchAndTempoDto,
 } from "./downloader.interface"
-import { getListByKeywords } from "src/common/utils/youtube-search"
+import { getFirstVideoId } from "src/common/utils/youtube-search"
 
 @Injectable()
 export class DownloaderService implements OnModuleInit {
@@ -196,8 +196,7 @@ export class DownloaderService implements OnModuleInit {
     }
 
     private async searchAndGetFirstUrl(q: string): Promise<string> {
-        const list = await getListByKeywords(q)
-        const videoId = list?.items?.[0]?.id
+        const videoId = await getFirstVideoId(q)
         if (!videoId) return null
         return `https://youtu.be/${videoId}`
     }
