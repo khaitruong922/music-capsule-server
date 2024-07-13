@@ -22,7 +22,7 @@ export const getFirstVideoId = async (
                     return item.videoRenderer.videoId
                 }
                 if (item?.playlistVideoRenderer?.videoId) {
-                    return item.playlistRenderer.videoId
+                    return item.playlistVideoRenderer.videoId
                 }
             }
         }
