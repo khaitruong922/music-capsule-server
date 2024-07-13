@@ -13,84 +13,23 @@ export const getFirstVideoId = async (
         const sectionListRenderer =
             page.initData.contents.twoColumnSearchResultsRenderer
                 .primaryContents.sectionListRenderer
-        let items = []
 
         for (const content of sectionListRenderer.contents) {
             const { itemSectionRenderer } = content
             if (!itemSectionRenderer) continue
             for (const item of itemSectionRenderer.contents) {
                 if (item?.videoRenderer?.videoId) {
-                    items.push(createVideoRender(item))
-                    break
+                    return item.videoRenderer.videoId
+                }
+                if (item?.playlistVideoRenderer?.videoId) {
+                    return item.playlistRenderer.videoId
                 }
             }
-            if (items.length > 0) break
         }
-        return items?.[0]?.id
+        return undefined
     } catch (ex) {
         console.error(ex)
         return await Promise.reject(ex)
-    }
-}
-
-const createVideoRender = (json: any) => {
-    try {
-        if (json && (json.videoRenderer || json.playlistVideoRenderer)) {
-            let videoRenderer = null
-            if (json.videoRenderer) {
-                videoRenderer = json.videoRenderer
-            } else if (json.playlistVideoRenderer) {
-                videoRenderer = json.playlistVideoRenderer
-            }
-            var isLive = false
-            if (
-                videoRenderer.badges &&
-                videoRenderer.badges.length > 0 &&
-                videoRenderer.badges[0].metadataBadgeRenderer &&
-                videoRenderer.badges[0].metadataBadgeRenderer.style ==
-                    "BADGE_STYLE_TYPE_LIVE_NOW"
-            ) {
-                isLive = true
-            }
-            if (videoRenderer.thumbnailOverlays) {
-                videoRenderer.thumbnailOverlays.forEach((item: any) => {
-                    if (
-                        item.thumbnailOverlayTimeStatusRenderer &&
-                        item.thumbnailOverlayTimeStatusRenderer.style &&
-                        item.thumbnailOverlayTimeStatusRenderer.style == "LIVE"
-                    ) {
-                        isLive = true
-                    }
-                })
-            }
-            const id = videoRenderer.videoId
-            const thumbnail = videoRenderer.thumbnail
-            const title = videoRenderer.title.runs[0].text
-            const shortBylineText = videoRenderer.shortBylineText
-                ? videoRenderer.shortBylineText
-                : ""
-            const lengthText = videoRenderer.lengthText
-                ? videoRenderer.lengthText
-                : ""
-            const channelTitle =
-                videoRenderer.ownerText && videoRenderer.ownerText.runs
-                    ? videoRenderer.ownerText.runs[0].text
-                    : ""
-            return {
-                id,
-                type: "video",
-                thumbnail,
-                title,
-                channelTitle,
-                shortBylineText,
-                length: lengthText,
-                isLive,
-            }
-        } else {
-            return {}
-        }
-    } catch (ex) {
-        throw ex
     }
 }
 
