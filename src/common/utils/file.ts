@@ -1,6 +1,6 @@
 import path from "path"
 import sanitize from "sanitize-filename"
-import ytdl from "ytdl-core"
+import ytdl from "@distube/ytdl-core"
 
 export function getExtensionFromFormat(format: ytdl.Filter): string {
     if (format === "videoandaudio") return ".mp4"

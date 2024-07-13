@@ -19,12 +19,13 @@ import {
 } from "src/common/utils/file"
 import { isValidHttpUrl } from "src/common/utils/url"
 import * as yt from "youtube-search-without-api-key"
-import ytdl from "ytdl-core"
+import ytdl from "@distube/ytdl-core"
 import {
     CreateDownloaderDto,
     DownloadVideoData,
     ModifyPitchAndTempoDto,
 } from "./downloader.interface"
+import { getListByKeywords } from "src/common/utils/youtube-search"
 
 @Injectable()
 export class DownloaderService implements OnModuleInit {
@@ -195,10 +196,9 @@ export class DownloaderService implements OnModuleInit {
     }
 
     private async searchAndGetFirstUrl(q: string): Promise<string> {
-        const videos = await yt.search(q)
-        const video = videos[0]
-        if (!video) return null
-        const videoId = video.id.videoId
+        const list = await getListByKeywords(q)
+        const videoId = list?.items?.[0]?.id
+        if (!videoId) return null
         return `https://youtu.be/${videoId}`
     }
 }
